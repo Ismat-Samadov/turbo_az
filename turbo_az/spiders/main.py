@@ -9,15 +9,28 @@ class TurboSpider(scrapy.Spider):
     start_urls = ["https://turbo.az/autos?page=1"]
     script = '''
         function main(splash, args)
+            local success, error_message
+
+            success, error_message = pcall(function()
             splash.private_mode_enabled = false
             url = args.url
-            assert(splash:go(url))
-            splash:set_viewport_full()
+            assert (splash:go(url))
+            splash: set_viewport_full()
+            end)
+        
+            if not success then
+            local log_file = io.open("error_log.txt", "a")
+            log_file:write("Error: "..error_message.." ")
+            log_file: close()
+        
+            splash: log("Error: "..error_message)
+            end
+        
             return {
-                html = splash:html()
+                html = splash: html()
             }
-        end   
-    '''
+        end
+            '''
 
     def start_requests(self):
         yield SplashRequest(
