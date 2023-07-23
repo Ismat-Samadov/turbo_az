@@ -16,16 +16,13 @@ class TurboSpider(scrapy.Spider):
             url = args.url
             assert (splash:go(url))
             splash: set_viewport_full()
-            end)
-        
+            end)        
             if not success then
             local log_file = io.open("error_log.txt", "a")
             log_file:write("Error: "..error_message.." ")
-            log_file: close()
-        
+            log_file: close()        
             splash: log("Error: "..error_message)
-            end
-        
+            end        
             return {
                 html = splash: html()
             }
@@ -66,7 +63,7 @@ class TurboSpider(scrapy.Spider):
 
     def parse_car_details(self, response):
         href = response.request.meta['href'],
-        id = response.xpath('//div[@class="product-actions__id"]').get()
+        id = response.xpath('//div[@class="product-actions__id"]/text()').get()
         phone = response.xpath(
             '//div[@class="product-phones__list"]/a[@class="product-phones__list-i"]/text()').getall()
         product_title = response.xpath('//h1[@class="product-title"]/text()').get()
