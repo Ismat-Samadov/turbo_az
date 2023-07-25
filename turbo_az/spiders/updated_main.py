@@ -1,33 +1,35 @@
 import scrapy
 from scrapy_splash import SplashRequest
 from scrapy.utils.request import request_fingerprint
+from twisted.internet.error import TimeoutError as GlobalTimeoutError
+import time
 
 
 class TurboSpider(scrapy.Spider):
-    name = "main"
+    name = "updated_main"
     allowed_domains = ["turbo.az"]
     start_urls = ["https://turbo.az/autos?page=1"]
     script = '''
-        function main(splash, args)
+         function main(splash, args)
             local success, error_message
-
+        
             success, error_message = pcall(function()
-            splash.private_mode_enabled = false
-            url = args.url
-            assert (splash:go(url))
-            splash: set_viewport_full()
-            end)        
+                splash.private_mode_enabled = false
+                url = args.url
+                assert(splash:go(url))
+                splash:set_viewport_full()
+            end)
+        
             if not success then
-            local log_file = io.open("error_log.txt", "a")
-            log_file:write("Error: "..error_message.." ")
-            log_file: close()        
-            splash: log("Error: "..error_message)
-            end        
+                -- Use splash:log to log the error message
+                splash:log("Error: " .. error_message)
+            end
+        
             return {
-                html = splash: html()
+                html = splash:html()
             }
         end
-            '''
+             '''
 
     def start_requests(self):
         yield SplashRequest(
@@ -37,6 +39,21 @@ class TurboSpider(scrapy.Spider):
             args={'lua_source': self.script}
         )
 
+    def retry_request(self, request):
+        # Delay before retrying (e.g., 5 seconds)
+        delay = 5
+        time.sleep(delay)
+        return request.copy()
+
+    def handle_error(self, failure):
+        if failure.check(GlobalTimeoutError):
+            # Retry the request
+            request = failure.request
+            return self.retry_request(request)
+        else:
+            # Log other errors
+            self.logger.error(repr(failure))
+
     def parse_pagination(self, response):
         # Extract car links from the current page
         hrefs = response.xpath('/html/body/div[4]/div[3]/div[2]/div/div/div/div/a[1]/@href').getall()
@@ -45,11 +62,9 @@ class TurboSpider(scrapy.Spider):
                 url=response.urljoin(href),
                 callback=self.parse_car_details,
                 endpoint='execute',
-                args={'lua_source': self.script},
+                args={'lua_source': self.script, 'timeout': 60},  # Pass the timeout through args
                 headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
                 meta={'href': href},
-                splash_args={'timeout': 60}  # Increase the timeout to 60 seconds
-
             )
 
         # Follow pagination links and recursively parse each page
@@ -59,8 +74,8 @@ class TurboSpider(scrapy.Spider):
                 url=response.urljoin(link),
                 callback=self.parse_pagination,
                 endpoint='execute',
-                args={'lua_source': self.script},
-                headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)}
+                args={'lua_source': self.script, 'timeout': 60},  # Pass the timeout through args
+                headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
             )
 
     def parse_car_details(self, response):
@@ -108,7 +123,6 @@ class TurboSpider(scrapy.Spider):
             '/html/body/div[4]/div[3]/div[3]/div[2]/div/main/section[3]/div/div[2]/div[6]/span/text()').get()
         market = response.xpath(
             '/html/body/div[4]/div[3]/div[3]/div[2]/div/main/section[3]/div/div[2]/div[7]/span/text()').get()
-
         yield {
             'href': href,
             'id': id,
@@ -135,3 +149,9 @@ class TurboSpider(scrapy.Spider):
             'condition': condition,
             'market': market
         }
+
+    def process_exception(self, request, exception, spider):
+        # Handle exceptions globally
+        if isinstance(exception, GlobalTimeoutError):
+            # Retry the request
+            return self.retry_request(request)
