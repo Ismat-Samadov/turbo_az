@@ -3,6 +3,10 @@ from scrapy_splash import SplashRequest
 from scrapy.utils.request import request_fingerprint
 from twisted.internet.error import TimeoutError as GlobalTimeoutError
 import time
+import warnings
+
+# Disable deprecation warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class TurboSpider(scrapy.Spider):
