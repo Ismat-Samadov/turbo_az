@@ -1,8 +1,9 @@
 import time
 import warnings
-import hashlib
 import scrapy
 from scrapy_splash import SplashRequest
+from scrapy.utils.request import request_fingerprint
+
 from twisted.internet.error import TimeoutError as GlobalTimeoutError
 
 # Disable deprecation warnings
@@ -10,7 +11,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class TurboSpider(scrapy.Spider):
-    name = "update"
+    name = "standalone"
     allowed_domains = ["turbo.az"]
     start_urls = ["https://turbo.az/autos?page=1"]
     script = '''
@@ -31,15 +32,6 @@ class TurboSpider(scrapy.Spider):
             }
         end
              '''
-
-    def request_fingerprint(self, request):
-        """Generate a fingerprint for a request."""
-        fp = hashlib.sha1()
-        fp.update(request.method.encode())
-        fp.update(request.url.encode())
-        if request.body:
-            fp.update(request.body)
-        return fp.hexdigest()
 
     def start_requests(self):
         yield SplashRequest(
@@ -68,28 +60,24 @@ class TurboSpider(scrapy.Spider):
         # Extract car links from the current page
         hrefs = response.xpath('/html/body/div[4]/div[3]/div[2]/div/div/div/div/a[1]/@href').getall()
         for href in hrefs:
-            req_fp = self.request_fingerprint(response.request)
-
             yield SplashRequest(
                 url=response.urljoin(href),
                 callback=self.parse_car_details,
                 endpoint='execute',
                 args={'lua_source': self.script, 'timeout': 60},
-                headers={'X-Crawlera-Fingerprint': req_fp},
+                headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
                 meta={'href': href},
             )
 
         # Follow pagination links and recursively parse each page
         pagination_links = response.xpath('//nav[@class="pagination"]/span[@class="page"]/a/@href').getall()
         for link in pagination_links:
-            req_fp = self.request_fingerprint(response.request)
-
             yield SplashRequest(
                 url=response.urljoin(link),
                 callback=self.parse_pagination,
                 endpoint='execute',
                 args={'lua_source': self.script, 'timeout': 60},
-                headers={'X-Crawlera-Fingerprint': req_fp},
+                headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
             )
 
     def parse_car_details(self, response):

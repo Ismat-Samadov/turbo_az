@@ -21,11 +21,9 @@ class TurboSpider(scrapy.Spider):
                 splash.private_mode_enabled = false
                 url = args.url
                 assert(splash:go(url))
-                splash:set_viewport_full()
             end)
         
             if not success then
-                -- Use splash:log to log the error message
                 splash:log("Error: " .. error_message)
             end
         
