@@ -58,30 +58,6 @@ class TurboSpider(scrapy.Spider):
             # Log other errors
             self.logger.error(repr(failure))
 
-    # def parse_pagination(self, response):
-    #     # Extract car links from the current page
-    #     hrefs = response.xpath('/html/body/div[4]/div[3]/div[2]/div/div/div/div/a[1]/@href').getall()
-    #     for href in hrefs:
-    #         yield SplashRequest(
-    #             url=response.urljoin(href),
-    #             callback=self.parse_car_details,
-    #             endpoint='execute',
-    #             args={'lua_source': self.script, 'timeout': 60},  # Pass the timeout through args
-    #             headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
-    #             meta={'href': href},
-    #         )
-    #
-    #     # Follow pagination links and recursively parse each page
-    #     pagination_links = response.xpath('//nav[@class="pagination"]/span[@class="page"]/a/@href').getall()
-    #     for link in pagination_links:
-    #         yield SplashRequest(
-    #             url=response.urljoin(link),
-    #             callback=self.parse_pagination,
-    #             endpoint='execute',
-    #             args={'lua_source': self.script, 'timeout': 60},  # Pass the timeout through args
-    #             headers={'X-Crawlera-Fingerprint': request_fingerprint(response.request)},
-    #         )
-
     def parse_pagination(self, response):
         # Extract car links from the current page
         hrefs = response.xpath('/html/body/div[4]/div[3]/div[2]/div/div/div/div/a[1]/@href').getall()
