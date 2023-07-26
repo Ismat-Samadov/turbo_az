@@ -11,7 +11,6 @@ class TurboSpider(scrapy.Spider):
           splash.private_mode_enabled=false
           url=args.url
           assert(splash:go(url))
-          splash:set_viewport_full()
           return {
             html=splash:html()
             }
