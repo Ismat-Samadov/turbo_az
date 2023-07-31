@@ -103,7 +103,28 @@ DOWNLOADER_MIDDLEWARES = {
 SPIDER_MIDDLEWARES = {
     'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
 }
+# Optional settings for delay and parallelism
+CONCURRENT_REQUESTS = 10  # Adjust the concurrency level as needed
+DOWNLOAD_DELAY = 2  # Add a delay between requests if desired
 
+# Splash options
+SPLASH_ARGS = {
+    # Optional: Set a wait time to ensure JavaScript is rendered
+    'wait': 5,
+    # Optional: Pass any other Splash options you need
+}
 DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
 
 # HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
+
+
+# Enable caching middleware
+HTTPCACHE_ENABLED = True
+
+# Choose the caching storage backend (e.g., Filesystem or Redis)
+HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+# If you have Redis installed and want to use it as a caching storage:
+# HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.RedisCacheStorage'
+
+# Define the cache expiration time in seconds (optional)
+HTTPCACHE_EXPIRATION_SECS = 60 * 60 * 24  # 1 day (adjust as needed)
