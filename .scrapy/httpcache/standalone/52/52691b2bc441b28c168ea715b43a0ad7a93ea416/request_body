@@ -1,0 +1,13 @@
+{
+    "cookies": [],
+    "headers": {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en",
+        "Referer": "https://turbo.az/autos?page=199",
+        "User-Agent": "Scrapy/2.9.0 (+https://scrapy.org)",
+        "X-Crawlera-Fingerprint": "e58bb3318c7f39e4e8bbb7735cbd70a3961e9d1b"
+    },
+    "lua_source": "\n         function main(splash, args)\n            local success, error_message\n            success, error_message = pcall(function()\n                splash.private_mode_enabled = false\n                url = args.url\n                assert(splash:go(url))\n                splash:set_viewport_full()\n            end)\n            if not success then\n                splash:log(\"Error: \" .. error_message)\n            end\n\n            return {\n                html = splash:html()\n            }\n        end\n             ",
+    "timeout": 60,
+    "url": "https://turbo.az/autos/7608063-ford-ecosport"
+}
