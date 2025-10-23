@@ -1,1 +1,0 @@
-{"error": 400, "type": "ScriptError", "description": "Error happened while executing Lua script", "info": {"source": "[string \"...\"]", "line_number": 11, "error": "attempt to call method 'log' (a nil value)", "type": "LUA_ERROR", "message": "Lua error: [string \"...\"]:11: attempt to call method 'log' (a nil value)"}}

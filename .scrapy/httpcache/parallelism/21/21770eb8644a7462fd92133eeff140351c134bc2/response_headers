@@ -1,7 +1,0 @@
-Content-Length: 0
-Date: Sun, 30 Jul 2023 21:44:08 GMT
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Cf-Cache-Status: DYNAMIC
-Server: cloudflare
-Cf-Ray: 7ef0c7fe6a1b9dce-LLK
-Alt-Svc: h3=":443"; ma=86400
