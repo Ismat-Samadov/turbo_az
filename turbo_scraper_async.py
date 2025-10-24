@@ -496,7 +496,7 @@ async def main():
 
         # Configure pages
         start_page = 1
-        end_page = 5
+        end_page = 1855
 
         logger.info("=" * 60)
         logger.info("TURBO.AZ ASYNC SCRAPER")
