@@ -567,7 +567,7 @@ async def main():
 
     # Configuration
     START_PAGE = 1
-    END_PAGE = 5  # Adjust this to scrape more pages
+    END_PAGE = 185  # Adjust this to scrape more pages
     BASE_URL = "https://turbo.az/autos"
     MAX_CONCURRENT = 10
     DELAY = 0
