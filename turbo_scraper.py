@@ -567,7 +567,7 @@ async def main():
 
     # Configuration
     START_PAGE = 1
-    END_PAGE = 185  # 1770 pages total
+    END_PAGE = 1770  # 1770 pages total
     BASE_URL = "https://turbo.az/autos"
     MAX_CONCURRENT = 24
     DELAY = 0
