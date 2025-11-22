@@ -1,27 +1,31 @@
 """
-Turbo.az Car Listings Scraper
+Turbo.az Car Listings Scraper with Crash Recovery
 Asynchronously scrapes car listings from turbo.az for market analysis
+Features: Auto-save, checkpoint system, resume on crash/interruption
 """
 
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import pandas as pd
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 import re
 from datetime import datetime
 import logging
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 import time
 from dataclasses import dataclass, asdict
 import json
+import os
+import signal
+import sys
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('scraper.log'),
+        logging.FileHandler('scraper.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -83,8 +87,73 @@ class CarListing:
     scraped_at: str = ""
 
 
+class CheckpointManager:
+    """Manages scraping progress and crash recovery"""
+
+    def __init__(self, checkpoint_file: str = "scraper_checkpoint.json"):
+        self.checkpoint_file = checkpoint_file
+        self.data_file = "scraped_data_backup.json"
+
+    def save_checkpoint(self, scraped_urls: Set[str], pending_urls: List[str],
+                       listings: List[CarListing], pages_completed: List[int]):
+        """Save current progress"""
+        checkpoint = {
+            'scraped_urls': list(scraped_urls),
+            'pending_urls': pending_urls,
+            'pages_completed': pages_completed,
+            'timestamp': datetime.now().isoformat(),
+            'total_scraped': len(listings)
+        }
+
+        # Save checkpoint
+        with open(self.checkpoint_file, 'w', encoding='utf-8') as f:
+            json.dump(checkpoint, f, indent=2)
+
+        # Save data backup
+        if listings:
+            data = [asdict(listing) for listing in listings]
+            with open(self.data_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+
+        logger.info(f"Checkpoint saved: {len(scraped_urls)} URLs scraped, {len(pending_urls)} pending")
+
+    def load_checkpoint(self) -> Optional[Dict]:
+        """Load previous progress if exists"""
+        if os.path.exists(self.checkpoint_file):
+            try:
+                with open(self.checkpoint_file, 'r', encoding='utf-8') as f:
+                    checkpoint = json.load(f)
+                logger.info(f"Resuming from checkpoint: {checkpoint['total_scraped']} listings already scraped")
+                return checkpoint
+            except Exception as e:
+                logger.error(f"Failed to load checkpoint: {e}")
+                return None
+        return None
+
+    def load_data_backup(self) -> List[CarListing]:
+        """Load previously scraped data"""
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                listings = [CarListing(**item) for item in data]
+                logger.info(f"Loaded {len(listings)} previously scraped listings")
+                return listings
+            except Exception as e:
+                logger.error(f"Failed to load data backup: {e}")
+                return []
+        return []
+
+    def clear_checkpoint(self):
+        """Clear checkpoint files after successful completion"""
+        for file in [self.checkpoint_file, self.data_file]:
+            if os.path.exists(file):
+                os.remove(file)
+                logger.info(f"Removed {file}")
+
+
 class TurboAzScraper:
-    """Asynchronous scraper for turbo.az car listings"""
+    """Asynchronous scraper for turbo.az car listings with crash recovery"""
 
     def __init__(self, max_concurrent_requests: int = 10, delay_between_requests: float = 0.5):
         self.base_url = "https://turbo.az"
@@ -93,6 +162,18 @@ class TurboAzScraper:
         self.semaphore = asyncio.Semaphore(max_concurrent_requests)
         self.session = None
         self.scraped_listings = []
+        self.checkpoint_manager = CheckpointManager()
+        self.scraped_urls: Set[str] = set()
+        self.should_stop = False
+
+        # Setup signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, signum, frame):
+        """Handle interruption signals gracefully"""
+        logger.warning("\nInterruption received! Saving progress...")
+        self.should_stop = True
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -101,7 +182,8 @@ class TurboAzScraper:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept-Language': 'az,en-US;q=0.9,en;q=0.8',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            }
+            },
+            timeout=aiohttp.ClientTimeout(total=30)
         )
         return self
 
@@ -111,20 +193,27 @@ class TurboAzScraper:
             await self.session.close()
 
     async def fetch_page(self, url: str, retry_count: int = 3) -> Optional[str]:
-        """Fetch a single page with retry logic"""
+        """Fetch a single page with retry logic and error handling"""
         async with self.semaphore:
             for attempt in range(retry_count):
                 try:
                     await asyncio.sleep(self.delay_between_requests)
-                    async with self.session.get(url, timeout=30) as response:
+                    async with self.session.get(url) as response:
                         if response.status == 200:
                             return await response.text()
                         else:
                             logger.warning(f"Failed to fetch {url}: Status {response.status}")
+                except asyncio.TimeoutError:
+                    logger.warning(f"Timeout fetching {url} (attempt {attempt + 1}/{retry_count})")
+                except aiohttp.ClientError as e:
+                    logger.warning(f"Network error fetching {url}: {e} (attempt {attempt + 1}/{retry_count})")
                 except Exception as e:
-                    logger.error(f"Error fetching {url} (attempt {attempt + 1}/{retry_count}): {e}")
-                    if attempt < retry_count - 1:
-                        await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    logger.error(f"Error fetching {url}: {e} (attempt {attempt + 1}/{retry_count})")
+
+                if attempt < retry_count - 1:
+                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+
+            logger.error(f"Failed to fetch {url} after {retry_count} attempts")
             return None
 
     def extract_listing_urls(self, html: str) -> List[str]:
@@ -132,7 +221,6 @@ class TurboAzScraper:
         soup = BeautifulSoup(html, 'html.parser')
         listing_urls = []
 
-        # Find all product items
         products = soup.find_all('div', class_='products-i')
 
         for product in products:
@@ -141,7 +229,6 @@ class TurboAzScraper:
                 full_url = urljoin(self.base_url, link['href'])
                 listing_urls.append(full_url)
 
-        logger.info(f"Found {len(listing_urls)} listings on page")
         return listing_urls
 
     def extract_listing_id(self, url: str) -> str:
@@ -160,7 +247,6 @@ class TurboAzScraper:
         soup = BeautifulSoup(html, 'html.parser')
         listing = CarListing()
 
-        # Basic info
         listing.listing_id = self.extract_listing_id(url)
         listing.listing_url = url
         listing.scraped_at = datetime.now().isoformat()
@@ -187,7 +273,6 @@ class TurboAzScraper:
             label = self.clean_text(label_elem.get_text())
             value = self.clean_text(value_elem.get_text())
 
-            # Map properties to listing fields
             if 'Şəhər' in label or 'City' in label:
                 listing.city = value
             elif 'Marka' in label or 'Make' in label:
@@ -199,7 +284,6 @@ class TurboAzScraper:
             elif 'Yürüş' in label or 'Mileage' in label:
                 listing.mileage = value
             elif 'Mühərrik' in label or 'Engine' in label:
-                # Parse engine info: "2.5 L / 174 a.g. / Dizel"
                 engine_parts = value.split('/')
                 if len(engine_parts) >= 1:
                     listing.engine_volume = self.clean_text(engine_parts[0])
@@ -229,7 +313,7 @@ class TurboAzScraper:
         if desc_elem:
             listing.description = self.clean_text(desc_elem.get_text())
 
-        # Extract extras/features
+        # Extract extras
         extras_list = soup.find('ul', class_='product-extras')
         if extras_list:
             extras = [self.clean_text(li.get_text()) for li in extras_list.find_all('li')]
@@ -252,16 +336,13 @@ class TurboAzScraper:
                     if match:
                         listing.views = match.group()
 
-        # Extract badges/flags from main page context
-        # Check for VIP, Featured, Salon badges
+        # Extract badges
         if soup.find('span', class_='vipped-icon'):
             listing.is_vip = True
         if soup.find('span', class_='featured-icon'):
             listing.is_featured = True
         if soup.find('div', class_='products-i__label--salon'):
             listing.is_salon = True
-
-        # Check for credit/barter icons
         if soup.find('div', class_='products-i__icon--loan'):
             listing.has_credit = True
         if soup.find('div', class_='products-i__icon--barter'):
@@ -269,36 +350,38 @@ class TurboAzScraper:
         if soup.find('div', class_='products-i__label--vin'):
             listing.has_vin = True
 
-        # Extract image URLs
+        # Extract images
         image_urls = []
         slider_images = soup.find_all('img', alt=re.compile(r'.*'))
         for img in slider_images:
             src = img.get('src')
             if src and 'turbo.azstatic.com' in src and 'uploads' in src:
-                # Get full resolution image
                 full_img = src.replace('f460x343', 'full').replace('f660x496', 'full')
                 if full_img not in image_urls:
                     image_urls.append(full_img)
 
-        listing.image_urls = ' | '.join(image_urls[:10])  # Limit to first 10 images
+        listing.image_urls = ' | '.join(image_urls[:10])
 
         return listing
 
     async def scrape_listing(self, url: str) -> Optional[CarListing]:
         """Scrape a single car listing"""
-        logger.info(f"Scraping listing: {url}")
+        if self.should_stop:
+            return None
+
+        logger.info(f"Scraping: {url}")
 
         html = await self.fetch_page(url)
         if not html:
-            logger.error(f"Failed to fetch listing: {url}")
             return None
 
         try:
             listing = self.parse_listing_page(html, url)
-            logger.info(f"Successfully scraped listing {listing.listing_id}: {listing.title}")
+            self.scraped_urls.add(url)
+            logger.info(f"[OK] {listing.listing_id}: {listing.title}")
             return listing
         except Exception as e:
-            logger.error(f"Error parsing listing {url}: {e}")
+            logger.error(f"Error parsing {url}: {e}")
             return None
 
     async def scrape_page(self, page_num: int, base_search_url: str = None) -> List[str]:
@@ -307,47 +390,96 @@ class TurboAzScraper:
             base_search_url = f"{self.base_url}/autos"
 
         url = f"{base_search_url}?page={page_num}" if page_num > 1 else base_search_url
-        logger.info(f"Scraping page {page_num}: {url}")
+        logger.info(f"Fetching page {page_num}: {url}")
 
         html = await self.fetch_page(url)
         if not html:
-            logger.error(f"Failed to fetch page {page_num}")
             return []
 
-        return self.extract_listing_urls(html)
+        urls = self.extract_listing_urls(html)
+        logger.info(f"Found {len(urls)} listings on page {page_num}")
+        return urls
 
     async def scrape_all_pages(self, start_page: int = 1, end_page: int = 10,
-                               base_search_url: str = None) -> List[CarListing]:
-        """Scrape all pages and their listings"""
-        all_listing_urls = []
+                               base_search_url: str = None, auto_save_interval: int = 10) -> List[CarListing]:
+        """Scrape all pages with crash recovery"""
 
-        # Step 1: Collect all listing URLs from all pages
-        logger.info(f"Collecting listing URLs from pages {start_page} to {end_page}")
-        page_tasks = [
-            self.scrape_page(page_num, base_search_url)
-            for page_num in range(start_page, end_page + 1)
-        ]
+        # Try to load previous progress
+        checkpoint = self.checkpoint_manager.load_checkpoint()
+        if checkpoint:
+            self.scraped_urls = set(checkpoint.get('scraped_urls', []))
+            pending_urls = checkpoint.get('pending_urls', [])
+            pages_completed = set(checkpoint.get('pages_completed', []))
+            self.scraped_listings = self.checkpoint_manager.load_data_backup()
+            logger.info(f"Resuming: {len(self.scraped_listings)} listings, {len(pending_urls)} URLs pending")
+        else:
+            pending_urls = []
+            pages_completed = set()
 
-        page_results = await asyncio.gather(*page_tasks)
-        for urls in page_results:
+        # Collect listing URLs from pages
+        all_listing_urls = list(pending_urls)  # Start with pending URLs
+
+        for page_num in range(start_page, end_page + 1):
+            if self.should_stop:
+                break
+
+            if page_num in pages_completed:
+                logger.info(f"Page {page_num} already processed, skipping")
+                continue
+
+            urls = await self.scrape_page(page_num, base_search_url)
             all_listing_urls.extend(urls)
+            pages_completed.add(page_num)
 
-        # Remove duplicates
-        all_listing_urls = list(set(all_listing_urls))
-        logger.info(f"Found {len(all_listing_urls)} unique listings")
+            # Save checkpoint after each page
+            self.checkpoint_manager.save_checkpoint(
+                self.scraped_urls,
+                all_listing_urls,
+                self.scraped_listings,
+                list(pages_completed)
+            )
 
-        # Step 2: Scrape all individual listings
-        logger.info("Starting to scrape individual listings...")
-        listing_tasks = [self.scrape_listing(url) for url in all_listing_urls]
+        # Remove already scraped URLs
+        urls_to_scrape = [url for url in all_listing_urls if url not in self.scraped_urls]
+        logger.info(f"Total URLs to scrape: {len(urls_to_scrape)} (skipping {len(all_listing_urls) - len(urls_to_scrape)} already scraped)")
 
-        listings = await asyncio.gather(*listing_tasks)
+        # Scrape individual listings with auto-save
+        for idx, url in enumerate(urls_to_scrape, 1):
+            if self.should_stop:
+                logger.warning("Stopping due to interruption...")
+                break
 
-        # Filter out None results
-        valid_listings = [l for l in listings if l is not None]
-        logger.info(f"Successfully scraped {len(valid_listings)} out of {len(all_listing_urls)} listings")
+            listing = await self.scrape_listing(url)
+            if listing:
+                self.scraped_listings.append(listing)
 
-        self.scraped_listings = valid_listings
-        return valid_listings
+            # Auto-save every N listings
+            if idx % auto_save_interval == 0:
+                remaining_urls = urls_to_scrape[idx:]
+                self.checkpoint_manager.save_checkpoint(
+                    self.scraped_urls,
+                    remaining_urls,
+                    self.scraped_listings,
+                    list(pages_completed)
+                )
+                logger.info(f"Progress: {idx}/{len(urls_to_scrape)} listings")
+
+        # Final save
+        if not self.should_stop:
+            logger.info(f"Scraping completed! Total: {len(self.scraped_listings)} listings")
+            # Clear checkpoint on successful completion
+            self.checkpoint_manager.clear_checkpoint()
+        else:
+            # Save final checkpoint if interrupted
+            self.checkpoint_manager.save_checkpoint(
+                self.scraped_urls,
+                [],
+                self.scraped_listings,
+                list(pages_completed)
+            )
+            logger.info("Progress saved. Run again to resume.")
+
+        return self.scraped_listings
 
     def save_to_csv(self, filename: str = None):
         """Save scraped data to CSV"""
@@ -358,11 +490,8 @@ class TurboAzScraper:
         if filename is None:
             filename = f"turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
-        # Convert to DataFrame
         data = [asdict(listing) for listing in self.scraped_listings]
         df = pd.DataFrame(data)
-
-        # Save to CSV
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         logger.info(f"Saved {len(self.scraped_listings)} listings to {filename}")
 
@@ -375,15 +504,12 @@ class TurboAzScraper:
         if filename is None:
             filename = f"turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
-        # Convert to DataFrame
         data = [asdict(listing) for listing in self.scraped_listings]
         df = pd.DataFrame(data)
 
-        # Save to Excel with formatting
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='Listings', index=False)
 
-            # Auto-adjust column widths
             from openpyxl.utils import get_column_letter
             worksheet = writer.sheets['Listings']
             for idx, col in enumerate(df.columns):
@@ -405,10 +531,8 @@ class TurboAzScraper:
         if filename is None:
             filename = f"turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-        # Convert to dict
         data = [asdict(listing) for listing in self.scraped_listings]
 
-        # Save to JSON
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -420,38 +544,52 @@ async def main():
 
     # Configuration
     START_PAGE = 1
-    END_PAGE = 3  # Adjust this to scrape more pages
-    BASE_URL = "https://turbo.az/autos"  # Can customize with filters
-    MAX_CONCURRENT = 10  # Number of concurrent requests
-    DELAY = 0.5  # Delay between requests in seconds
+    END_PAGE = 5  # Adjust this to scrape more pages
+    BASE_URL = "https://turbo.az/autos"
+    MAX_CONCURRENT = 10
+    DELAY = 0.5
+    AUTO_SAVE_INTERVAL = 10  # Save progress every 10 listings
 
-    logger.info("Starting Turbo.az scraper...")
-    logger.info(f"Pages to scrape: {START_PAGE} to {END_PAGE}")
-    logger.info(f"Max concurrent requests: {MAX_CONCURRENT}")
-    logger.info(f"Delay between requests: {DELAY}s")
+    logger.info("="*60)
+    logger.info("Turbo.az Scraper with Crash Recovery")
+    logger.info("="*60)
+    logger.info(f"Pages: {START_PAGE} to {END_PAGE}")
+    logger.info(f"Auto-save every: {AUTO_SAVE_INTERVAL} listings")
+    logger.info(f"Press Ctrl+C to stop and save progress")
+    logger.info("="*60)
 
     start_time = time.time()
 
-    async with TurboAzScraper(
-        max_concurrent_requests=MAX_CONCURRENT,
-        delay_between_requests=DELAY
-    ) as scraper:
-        # Scrape all pages
-        listings = await scraper.scrape_all_pages(
-            start_page=START_PAGE,
-            end_page=END_PAGE,
-            base_search_url=BASE_URL
-        )
+    try:
+        async with TurboAzScraper(
+            max_concurrent_requests=MAX_CONCURRENT,
+            delay_between_requests=DELAY
+        ) as scraper:
+            listings = await scraper.scrape_all_pages(
+                start_page=START_PAGE,
+                end_page=END_PAGE,
+                base_search_url=BASE_URL,
+                auto_save_interval=AUTO_SAVE_INTERVAL
+            )
 
-        # Save results in multiple formats
-        scraper.save_to_csv()
-        scraper.save_to_excel()
-        scraper.save_to_json()
+            if listings:
+                scraper.save_to_csv()
+                scraper.save_to_excel()
+                scraper.save_to_json()
 
-    elapsed_time = time.time() - start_time
-    logger.info(f"Scraping completed in {elapsed_time:.2f} seconds")
-    logger.info(f"Total listings scraped: {len(listings)}")
-    logger.info(f"Average time per listing: {elapsed_time/len(listings):.2f}s" if listings else "N/A")
+        elapsed_time = time.time() - start_time
+        logger.info("="*60)
+        logger.info(f"Completed in {elapsed_time:.2f} seconds")
+        logger.info(f"Total listings: {len(listings)}")
+        if listings:
+            logger.info(f"Average time per listing: {elapsed_time/len(listings):.2f}s")
+        logger.info("="*60)
+
+    except KeyboardInterrupt:
+        logger.warning("\nInterrupted by user. Progress saved!")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        logger.info("Progress saved to checkpoint. Run again to resume.")
 
 
 if __name__ == "__main__":
