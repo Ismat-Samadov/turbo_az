@@ -1,12 +1,12 @@
+# Output files
+*.csv
+*.xlsx
+*.json
+
+# Logs
+*.log
+
 # Python
-venv
-
-.claude
-
-# Environment variables
-.env
-.env.local
-
 __pycache__/
 *.py[cod]
 *$py.class
@@ -28,11 +28,11 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# Virtual environments
 venv/
-env/
 ENV/
-
+env/
+.venv
 
 # IDE
 .vscode/
@@ -45,14 +45,6 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
-# Scraper data
-*.json
-*.csv
-*.xlsx
-scraper_checkpoint.json
-
-# Test files
-test_proxy*.py
+# Keep example outputs (if any)
+!example_output.csv
+!example_output.xlsx
