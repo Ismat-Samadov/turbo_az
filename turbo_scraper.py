@@ -567,11 +567,11 @@ async def main():
 
     # Configuration
     START_PAGE = 1
-    END_PAGE = 185  # Adjust this to scrape more pages
+    END_PAGE = 185  # 1770 pages total
     BASE_URL = "https://turbo.az/autos"
-    MAX_CONCURRENT = 10
+    MAX_CONCURRENT = 24
     DELAY = 0
-    AUTO_SAVE_INTERVAL = 10  # Save progress every 10 listings
+    AUTO_SAVE_INTERVAL = 50  # Save progress every 50 listings
 
     logger.info("="*60)
     logger.info("Turbo.az Scraper with Crash Recovery")
