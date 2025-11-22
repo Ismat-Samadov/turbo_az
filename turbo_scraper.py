@@ -216,10 +216,10 @@ class TurboAzScraper:
             logger.error(f"Failed to fetch {url} after {retry_count} attempts")
             return None
 
-    def extract_listing_urls(self, html: str) -> List[str]:
-        """Extract all car listing URLs from a page"""
+    def extract_listing_urls(self, html: str) -> List[Dict[str, any]]:
+        """Extract all car listing URLs and badge data from a page"""
         soup = BeautifulSoup(html, 'html.parser')
-        listing_urls = []
+        listing_data = []
 
         products = soup.find_all('div', class_='products-i')
 
@@ -227,9 +227,23 @@ class TurboAzScraper:
             link = product.find('a', class_='products-i__link')
             if link and link.get('href'):
                 full_url = urljoin(self.base_url, link['href'])
-                listing_urls.append(full_url)
 
-        return listing_urls
+                # Extract badges from listing card
+                badges = {
+                    'is_vip': bool(product.find('div', class_='products-i__label--vip')),
+                    'is_featured': bool(product.find('div', class_='products-i__label--featured')),
+                    'is_salon': bool(product.find('div', class_='products-i__label--salon')),
+                    'has_credit': bool(product.find('div', class_='products-i__icon--loan')),
+                    'has_barter': bool(product.find('div', class_='products-i__icon--barter')),
+                    'has_vin': bool(product.find('div', class_='products-i__label--vin'))
+                }
+
+                listing_data.append({
+                    'url': full_url,
+                    'badges': badges
+                })
+
+        return listing_data
 
     def extract_listing_id(self, url: str) -> str:
         """Extract listing ID from URL"""
@@ -242,7 +256,7 @@ class TurboAzScraper:
             return ""
         return ' '.join(text.strip().split())
 
-    def parse_listing_page(self, html: str, url: str) -> CarListing:
+    def parse_listing_page(self, html: str, url: str, badges: Dict[str, bool] = None) -> CarListing:
         """Parse individual car listing page"""
         soup = BeautifulSoup(html, 'html.parser')
         listing = CarListing()
@@ -250,6 +264,15 @@ class TurboAzScraper:
         listing.listing_id = self.extract_listing_id(url)
         listing.listing_url = url
         listing.scraped_at = datetime.now().isoformat()
+
+        # Set badges from listing card data
+        if badges:
+            listing.is_vip = badges.get('is_vip', False)
+            listing.is_featured = badges.get('is_featured', False)
+            listing.is_salon = badges.get('is_salon', False)
+            listing.has_credit = badges.get('has_credit', False)
+            listing.has_barter = badges.get('has_barter', False)
+            listing.has_vin = badges.get('has_vin', False)
 
         # Extract title
         title_elem = soup.find('h1', class_='product-title')
@@ -324,6 +347,20 @@ class TurboAzScraper:
         if seller_name_elem:
             listing.seller_name = self.clean_text(seller_name_elem.get_text())
 
+        # Extract posted date from shop-contact section
+        shop_contact = soup.find('div', class_='shop-contact')
+        if shop_contact:
+            for item in shop_contact.find_all('div', class_='shop-contact__param'):
+                label = item.find('div', class_='shop-contact__param-name')
+                value = item.find('a', class_='shop-contact__param-value')
+                if not value:
+                    value = item.find('div', class_='shop-contact__param-value')
+
+                if label and value:
+                    label_text = self.clean_text(label.get_text())
+                    if 'Turbo.az-da' in label_text or 'turbo.az-da' in label_text.lower():
+                        listing.posted_date = self.clean_text(value.get_text())
+
         # Extract statistics
         stats = soup.find('ul', class_='product-statistics')
         if stats:
@@ -335,20 +372,6 @@ class TurboAzScraper:
                     match = re.search(r'\d+', text)
                     if match:
                         listing.views = match.group()
-
-        # Extract badges
-        if soup.find('span', class_='vipped-icon'):
-            listing.is_vip = True
-        if soup.find('span', class_='featured-icon'):
-            listing.is_featured = True
-        if soup.find('div', class_='products-i__label--salon'):
-            listing.is_salon = True
-        if soup.find('div', class_='products-i__icon--loan'):
-            listing.has_credit = True
-        if soup.find('div', class_='products-i__icon--barter'):
-            listing.has_barter = True
-        if soup.find('div', class_='products-i__label--vin'):
-            listing.has_vin = True
 
         # Extract images
         image_urls = []
@@ -364,7 +387,7 @@ class TurboAzScraper:
 
         return listing
 
-    async def scrape_listing(self, url: str) -> Optional[CarListing]:
+    async def scrape_listing(self, url: str, badges: Dict[str, bool] = None) -> Optional[CarListing]:
         """Scrape a single car listing"""
         if self.should_stop:
             return None
@@ -376,7 +399,7 @@ class TurboAzScraper:
             return None
 
         try:
-            listing = self.parse_listing_page(html, url)
+            listing = self.parse_listing_page(html, url, badges)
             self.scraped_urls.add(url)
             logger.info(f"[OK] {listing.listing_id}: {listing.title}")
             return listing
@@ -384,8 +407,8 @@ class TurboAzScraper:
             logger.error(f"Error parsing {url}: {e}")
             return None
 
-    async def scrape_page(self, page_num: int, base_search_url: str = None) -> List[str]:
-        """Scrape all listing URLs from a single page"""
+    async def scrape_page(self, page_num: int, base_search_url: str = None) -> List[Dict[str, any]]:
+        """Scrape all listing URLs and badge data from a single page"""
         if base_search_url is None:
             base_search_url = f"{self.base_url}/autos"
 
@@ -396,9 +419,9 @@ class TurboAzScraper:
         if not html:
             return []
 
-        urls = self.extract_listing_urls(html)
-        logger.info(f"Found {len(urls)} listings on page {page_num}")
-        return urls
+        listing_data = self.extract_listing_urls(html)
+        logger.info(f"Found {len(listing_data)} listings on page {page_num}")
+        return listing_data
 
     async def scrape_all_pages(self, start_page: int = 1, end_page: int = 10,
                                base_search_url: str = None, auto_save_interval: int = 10) -> List[CarListing]:
@@ -408,16 +431,16 @@ class TurboAzScraper:
         checkpoint = self.checkpoint_manager.load_checkpoint()
         if checkpoint:
             self.scraped_urls = set(checkpoint.get('scraped_urls', []))
-            pending_urls = checkpoint.get('pending_urls', [])
+            pending_data = checkpoint.get('pending_urls', [])
             pages_completed = set(checkpoint.get('pages_completed', []))
             self.scraped_listings = self.checkpoint_manager.load_data_backup()
-            logger.info(f"Resuming: {len(self.scraped_listings)} listings, {len(pending_urls)} URLs pending")
+            logger.info(f"Resuming: {len(self.scraped_listings)} listings, {len(pending_data)} URLs pending")
         else:
-            pending_urls = []
+            pending_data = []
             pages_completed = set()
 
-        # Collect listing URLs from pages
-        all_listing_urls = list(pending_urls)  # Start with pending URLs
+        # Collect listing data from pages
+        all_listing_data = list(pending_data)  # Start with pending data
 
         for page_num in range(start_page, end_page + 1):
             if self.should_stop:
@@ -427,42 +450,42 @@ class TurboAzScraper:
                 logger.info(f"Page {page_num} already processed, skipping")
                 continue
 
-            urls = await self.scrape_page(page_num, base_search_url)
-            all_listing_urls.extend(urls)
+            listing_data = await self.scrape_page(page_num, base_search_url)
+            all_listing_data.extend(listing_data)
             pages_completed.add(page_num)
 
             # Save checkpoint after each page
             self.checkpoint_manager.save_checkpoint(
                 self.scraped_urls,
-                all_listing_urls,
+                all_listing_data,
                 self.scraped_listings,
                 list(pages_completed)
             )
 
         # Remove already scraped URLs
-        urls_to_scrape = [url for url in all_listing_urls if url not in self.scraped_urls]
-        logger.info(f"Total URLs to scrape: {len(urls_to_scrape)} (skipping {len(all_listing_urls) - len(urls_to_scrape)} already scraped)")
+        data_to_scrape = [item for item in all_listing_data if item['url'] not in self.scraped_urls]
+        logger.info(f"Total URLs to scrape: {len(data_to_scrape)} (skipping {len(all_listing_data) - len(data_to_scrape)} already scraped)")
 
         # Scrape individual listings with auto-save
-        for idx, url in enumerate(urls_to_scrape, 1):
+        for idx, item in enumerate(data_to_scrape, 1):
             if self.should_stop:
                 logger.warning("Stopping due to interruption...")
                 break
 
-            listing = await self.scrape_listing(url)
+            listing = await self.scrape_listing(item['url'], item['badges'])
             if listing:
                 self.scraped_listings.append(listing)
 
             # Auto-save every N listings
             if idx % auto_save_interval == 0:
-                remaining_urls = urls_to_scrape[idx:]
+                remaining_data = data_to_scrape[idx:]
                 self.checkpoint_manager.save_checkpoint(
                     self.scraped_urls,
-                    remaining_urls,
+                    remaining_data,
                     self.scraped_listings,
                     list(pages_completed)
                 )
-                logger.info(f"Progress: {idx}/{len(urls_to_scrape)} listings")
+                logger.info(f"Progress: {idx}/{len(data_to_scrape)} listings")
 
         # Final save
         if not self.should_stop:
@@ -547,7 +570,7 @@ async def main():
     END_PAGE = 5  # Adjust this to scrape more pages
     BASE_URL = "https://turbo.az/autos"
     MAX_CONCURRENT = 10
-    DELAY = 0.5
+    DELAY = 0
     AUTO_SAVE_INTERVAL = 10  # Save progress every 10 listings
 
     logger.info("="*60)

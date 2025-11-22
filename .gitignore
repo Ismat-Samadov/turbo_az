@@ -1,8 +1,3 @@
-# Output files
-*.csv
-*.xlsx
-*.json
-
 # Logs
 *.log
 
