@@ -10,6 +10,9 @@
 
 Analysis of 10,076 car listings reveals a market dominated by used vehicles (80%), with strong demand in the 20-30K AZN price range. Japanese and Korean brands lead in volume, while European luxury brands command premium pricing. The market shows healthy diversity across all segments with clear opportunities for both buyers and sellers.
 
+### Market Overview
+![Market Summary](charts/14_market_summary.png)
+
 ---
 
 ## 1. Price Analysis
