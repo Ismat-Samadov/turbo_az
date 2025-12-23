@@ -2,9 +2,11 @@
 .jsonl
 .csv
 .json
-
+scraped_data_backup.json
+scraper_checkpoint.json
 # Logs
 *.log
+.claude
 
 # Python
 __pycache__/

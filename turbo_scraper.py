@@ -6,6 +6,7 @@ Features: Auto-save, checkpoint system, resume on crash/interruption
 
 import asyncio
 import aiohttp
+import ssl
 from bs4 import BeautifulSoup
 import pandas as pd
 from typing import List, Dict, Optional, Set
@@ -177,7 +178,16 @@ class TurboAzScraper:
 
     async def __aenter__(self):
         """Async context manager entry"""
+        # Create SSL context that doesn't verify certificates
+        # This is needed when there are SSL issues (corporate proxy, certificate problems)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+
         self.session = aiohttp.ClientSession(
+            connector=connector,
             headers={
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept-Language': 'az,en-US;q=0.9,en;q=0.8',
