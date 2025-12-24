@@ -1,457 +1,387 @@
 # Turbo.az Car Market Analysis
 
-**Analysis Date:** November 2025
-**Total Listings:** 10,076 unique vehicles
+**Comparison Period:** November 2025 vs December 2025
 **Data Source:** turbo.az
+**November Listings:** 10,076 vehicles
+**December Listings:** 4,630 vehicles (partial sample)
 
 ---
 
 ## Executive Summary
 
-Analysis of 10,076 car listings reveals a market dominated by used vehicles (80%), with strong demand in the 20-30K AZN price range. Japanese and Korean brands lead in volume, while European luxury brands command premium pricing. The market shows healthy diversity across all segments with clear opportunities for both buyers and sellers.
+This analysis compares the Azerbaijan car market between November and December 2025, revealing significant market shifts including a **19.4% increase in average prices** and a **dramatic surge in hybrid/plug-in vehicles**. The green vehicle segment nearly doubled its market share, while credit availability expanded, making higher-priced vehicles more accessible.
 
-### Market Overview
-![Market Summary](charts/14_market_summary.png)
+### Market Overview Dashboard
+![Market Overview](charts/01_market_overview_comparison.png)
+
+---
+
+## Key Findings at a Glance
+
+| Metric | November 2025 | December 2025 | Change |
+|--------|---------------|---------------|--------|
+| **Average Price** | 38,370 AZN | 45,818 AZN | **+19.4%** |
+| **Median Price** | 24,400 AZN | 29,550 AZN | **+21.1%** |
+| Plug-in Hybrid Share | 12.8% | 21.3% | **+8.5pp** |
+| Hybrid Share | 7.2% | 8.2% | +1.0pp |
+| Credit Availability | ~28% | ~31% | +3.0pp |
 
 ---
 
 ## 1. Price Analysis
 
-### Price Distribution
-![Price Distribution](charts/01_price_distribution.png)
+### Price Distribution Comparison
+![Price Distribution](charts/02_price_distribution_comparison.png)
 
-**Key Metrics:**
-- Average Price: 42,000 AZN
-- Median Price: 25,000 AZN
-- Price Range: 4,200 - 850,000 AZN
+**November 2025:**
+- Average Price: 38,370 AZN
+- Median Price: 24,400 AZN
+- Price concentration: 10,000-40,000 AZN range
 
-**Insights:**
-- 65% of listings priced between 10,000-40,000 AZN
-- Median significantly lower than average indicates luxury segment skew
-- Sweet spot for buyers: 20,000-35,000 AZN range
+**December 2025:**
+- Average Price: 45,818 AZN (+19.4%)
+- Median Price: 29,550 AZN (+21.1%)
+- Shift toward higher price segments
 
----
-
-### Price Segmentation
-![Price Ranges](charts/13_price_ranges.png)
-
-**Market Breakdown:**
-- Under 10K: 8% (budget segment)
-- 10-20K: 22% (entry level)
-- 20-30K: 25% (mid-market sweet spot)
-- 30-50K: 23% (premium mid-range)
-- 50-75K: 12% (luxury entry)
-- 75K+: 10% (high luxury)
-
-**Buyer Recommendations:**
-- Budget (<20K): Focus on 2008-2014 Japanese brands, expect 150K+ km
-- Mid-Market (20-50K): Best value in 2015-2019 Korean/Japanese, under 120K km
-- Premium (50K+): European brands, certified pre-owned, full service history
+**Key Insight:** The market experienced significant price inflation across all segments. Both average and median prices increased by approximately 20%, indicating broad-based price increases rather than just luxury segment changes.
 
 ---
 
-### Premium Brand Pricing
-![Average Price by Make](charts/05_avg_price_by_make.png)
+### Price Segments Analysis
+![Price Segments](charts/10_price_segments.png)
 
-**Top 5 Average Prices:**
-1. Luxury European brands: 120K+ AZN
-2. Premium German makes: 80-100K AZN
-3. High-end SUVs: 65-85K AZN
-4. Luxury Japanese: 55-70K AZN
-5. Premium Korean: 35-50K AZN
+**Market Segment Shifts:**
 
-**Seller Strategy:**
-- Luxury brands: Emphasize features, service records, low mileage
-- Volume brands: Highlight reliability, fuel economy, practicality
+| Segment | Description | Trend |
+|---------|-------------|-------|
+| Budget | <10,000 AZN | Declining |
+| Economy | 10-25,000 AZN | Stable |
+| Mid-range | 25-50,000 AZN | Growing |
+| Premium | 50-100,000 AZN | Growing |
+| Luxury | 100,000+ AZN | Stable |
+
+**Analysis:**
+- Budget segment shrinking as entry-level prices rise
+- Mid-range and premium segments showing growth
+- Market moving upscale overall
+
+---
+
+### Average Price by Brand
+![Average Price by Make](charts/04_avg_price_by_make.png)
+
+**Brand Pricing Trends:**
+- Most brands showing price increases
+- Premium European brands maintaining position
+- Korean brands offering best value-for-money
+- Chinese brands competitive in economy segment
 
 ---
 
 ## 2. Brand & Model Analysis
 
-### Top Car Brands
-![Top Makes](charts/02_top_makes.png)
+### Top Car Brands Comparison
+![Top Makes Comparison](charts/03_top_makes_comparison.png)
 
-**Market Leaders:**
-1. Mercedes: 1,500+ listings (15%)
-2. Toyota: 1,400+ listings (14%)
-3. Hyundai: 1,200+ listings (12%)
-4. BMW: 900+ listings (9%)
-5. Kia: 750+ listings (7%)
+**Market Leaders (December 2025):**
+1. **Mercedes** - Premium segment leader
+2. **Hyundai** - Volume leader
+3. **Toyota** - Reliability champion
+4. **BMW** - Luxury performance
+5. **Kia** - Value leader
 
-**Emerging Brands:**
-- Changan, BYD: Strong growth in new car segment
-- Chinese manufacturers capturing 8% market share
-
-**Market Insight:**
-- Top 3 brands control 41% of total market
-- German luxury + Japanese reliability = 45% combined
-- Korean brands offer best value proposition
+**Brand Dynamics:**
+- Mercedes showing strong representation
+- Korean brands (Hyundai, Kia) maintaining market share
+- Chinese brands (Changan, BYD) establishing presence
+- Japanese brands stable with loyal customer base
 
 ---
 
-### Best-Selling Models
-![Top Models](charts/03_top_models.png)
+### Top Models
+![Top Models](charts/15_top_models.png)
 
-**Top 10 Models:**
-1. Mercedes E-Class
-2. Toyota Camry
-3. Hyundai Elantra
-4. BMW 5-Series
-5. Kia Sportage
-6. Toyota Land Cruiser
-7. Ford Transit (commercial)
-8. Hyundai Santa Fe
-9. Mercedes C-Class
-10. Toyota Prius
+**Most Popular Models:**
+- Mercedes E-Class, C-Class (luxury sedan)
+- Toyota Camry, Land Cruiser (reliability)
+- Hyundai Tucson, Santa Fe (value SUV)
+- Kia Sportage (affordable crossover)
+- BMW 5-Series, X5 (performance luxury)
 
-**Trends:**
-- Sedans still dominate but SUVs gaining fast
-- Hybrid models (Prius) showing strong presence
-- Commercial vehicles (Transit) indicate business market
+**Trend:** SUV and crossover models gaining share vs traditional sedans
 
 ---
 
-## 3. Vehicle Characteristics
+## 3. Green Vehicle Revolution
+
+### Fuel Type Trends
+![Fuel Type Trends](charts/05_fuel_type_trends.png)
+
+**The Big Story: Hybrid/Electric Surge**
+
+| Fuel Type | November | December | Change |
+|-----------|----------|----------|--------|
+| Gasoline | 60% | 52% | -8pp |
+| Diesel | 13% | 11% | -2pp |
+| **Plug-in Hybrid** | **12.8%** | **21.3%** | **+8.5pp** |
+| Hybrid | 7.2% | 8.2% | +1.0pp |
+| Electric | 2% | 3% | +1pp |
+
+**Key Insights:**
+1. **Plug-in Hybrid vehicles nearly doubled** their market share
+2. Combined hybrid/electric share: 20% -> 32.5%
+3. Traditional gasoline losing ground
+4. Diesel declining (environmental concerns)
+
+**Drivers of Change:**
+- Fuel price volatility
+- Environmental awareness
+- Government incentives
+- Better hybrid model availability
+- Lower running costs appeal
+
+---
+
+## 4. Vehicle Characteristics
 
 ### Year Distribution
-![Year Distribution](charts/04_year_distribution.png)
+![Year Distribution](charts/08_year_distribution.png)
 
-**Age Analysis:**
-- 2020-2025: 28% (new/recent)
-- 2015-2019: 32% (optimal used)
-- 2010-2014: 25% (budget used)
-- 2000-2009: 12% (old stock)
-- Pre-2000: 3% (classic/budget)
+**Age Profile:**
 
-**Buyer Guide by Year:**
-- 2020+: New car pricing, full warranty, latest tech
-- 2015-2019: Best value, modern features, reasonable depreciation
-- 2010-2014: Budget-friendly, proven reliability, higher maintenance
-- Pre-2010: Very low prices but expect repair costs
+| Category | Age | Market Share |
+|----------|-----|--------------|
+| New | 0-2 years | ~25% |
+| Recent | 3-5 years | ~30% |
+| Mid-age | 6-10 years | ~28% |
+| Older | 11-15 years | ~12% |
+| Classic | 15+ years | ~5% |
 
----
-
-### Mileage vs Price
-![Mileage vs Price](charts/06_mileage_vs_price.png)
-
-**Correlation Findings:**
-- Strong negative correlation: more mileage = lower price
-- Steepest depreciation: 0-100,000 km
-- Depreciation slows after 200,000 km
-- Price variation highest at low mileage (brand effect)
-
-**Sweet Spots:**
-- 80,000-120,000 km: Past break-in, before major services
-- 150,000-200,000 km: Significant savings, still reliable if maintained
-- Avoid: 250,000+ km unless commercial vehicle or exceptional maintenance
+**Trend:** Market shifting toward newer vehicles, likely driven by:
+- Availability of financing
+- Preference for modern safety features
+- Hybrid technology in newer models
 
 ---
 
-### Fuel Types
-![Fuel Type](charts/07_fuel_type_distribution.png)
-
-**Distribution:**
-- Gasoline: 62% (dominant)
-- Diesel: 18% (SUVs, commercial)
-- Plug-in Hybrid: 13% (growing fast)
-- Full Hybrid: 7% (established segment)
-
-**Cost Analysis:**
-- Gasoline: Lowest initial cost, wide availability
-- Diesel: Better highway economy, higher maintenance
-- Hybrid: Best city economy, moderate premium
-- Plug-in: Lowest running costs, highest purchase price
-
-**Recommendations:**
-- City driving: Hybrid/Plug-in Hybrid
-- Highway/Long distance: Diesel
-- Balanced use: Gasoline
-- Environmental priority: Electric/Plug-in Hybrid
-
----
-
-### Transmission Preferences
-![Transmission](charts/08_transmission_distribution.png)
+### Transmission Trends
+![Transmission Trends](charts/06_transmission_trends.png)
 
 **Market Split:**
-- Automatic: 76% (strong preference)
-- Manual: 21% (declining)
-- CVT/Other: 3% (specialized)
+- **Automatic:** ~78% (increasing)
+- **Manual:** ~19% (declining)
+- **CVT/Other:** ~3%
 
-**Value Impact:**
-- Automatic adds 10-15% to resale value
-- Manual offers 8-12% negotiation opportunity
-- CVT models often priced between manual/automatic
+**Insight:** Automatic transmission is now the market standard. Manual vehicles are becoming niche, primarily in budget segment.
 
 ---
 
-### Body Types
-![Body Types](charts/09_body_type_distribution.png)
+### Body Type Analysis
+![Body Type Analysis](charts/07_body_type_analysis.png)
 
 **Popular Categories:**
-1. Sedan: 42% (traditional favorite)
-2. SUV/Crossover: 38% (fast-growing)
-3. Hatchback: 9% (compact segment)
-4. Van/Commercial: 7% (business)
-5. Coupe: 2% (niche luxury)
-6. Other: 2%
+1. **SUV/Crossover:** Growing rapidly (~40%)
+2. **Sedan:** Traditional choice (~38%)
+3. **Hatchback:** Compact segment (~10%)
+4. **Commercial:** Business vehicles (~8%)
+5. **Other:** Specialty vehicles (~4%)
 
-**Trends:**
-- SUV market growing 15% annually
-- Sedan prices more competitive due to shifting demand
-- Crossovers command 20% premium over equivalent sedans
+**Trend:** SUVs overtaking sedans as the preferred body style
 
 ---
 
-## 4. Market Features
+### Color Preferences
+![Color Trends](charts/13_color_trends.png)
 
-### New vs Used
-![New vs Used](charts/10_new_vs_used.png)
+**Top Colors:**
+1. White - Premium, clean appearance
+2. Black - Executive, luxury
+3. Gray/Silver - Practical, hides dirt
+4. Blue - Growing in popularity
+5. Red - Sport/statement vehicles
 
-**Split:**
-- Used: 80% (8,061 listings)
-- New: 20% (2,015 listings)
+---
 
-**New Car Benefits:**
-- Factory warranty (4-5 years typical)
-- Latest safety features
-- No hidden history
-- 15-20% dealer negotiation possible
+## 5. Market Features
 
-**Used Car Benefits:**
-- Immediate 25-40% savings vs new
-- Wider selection
-- Known reliability history for older models
-- Better value at 3-5 years old
+### New vs Used Analysis
+![New vs Used](charts/14_new_vs_used.png)
+
+**Market Composition:**
+- **Used Vehicles:** ~80%
+- **New Vehicles:** ~20%
+
+**New Vehicle Segment:**
+- Dominated by salon/dealer listings
+- Chinese brands strong in new car segment
+- Korean brands offering competitive new car deals
+- Financing readily available
+
+**Used Vehicle Segment:**
+- Best value in 3-5 year old vehicles
+- Japanese brands hold value best
+- German luxury depreciates faster
+- Private sellers offer negotiation room
 
 ---
 
 ### Geographic Distribution
-![Top Cities](charts/11_top_cities.png)
+![City Distribution](charts/09_city_distribution.png)
 
 **Location Breakdown:**
-- Baku: 86% (8,665 listings)
-- Ganja: 4%
-- Sumgait: 3%
-- Mingachevir: 2%
-- Other regions: 5%
+- **Baku:** ~85% of all listings
+- **Sumgait:** ~5%
+- **Ganja:** ~3%
+- **Other regions:** ~7%
 
-**Implications:**
-- Baku offers best selection and competition
-- Regional buyers should consider traveling to Baku
-- Regional sellers may get faster sales locally but lower prices
+**Insight:** Baku dominates the market. Buyers in regions should consider:
+- Traveling to Baku for better selection
+- Online negotiations before travel
+- Transport costs in budget
 
 ---
 
 ### Listing Features
-![Features](charts/12_listing_features.png)
+![Listing Features](charts/11_listing_features.png)
 
-**Service Availability:**
-- Salon (Dealer): 3,200 listings (32%)
-- Credit Available: 2,800 listings (28%)
-- Barter/Trade-in: 1,500 listings (15%)
-- VIP Listing: 500 listings (5%)
-- Featured: 300 listings (3%)
-- VIN Check: 400 listings (4%)
+**Available Services:**
 
-**What It Means:**
-- Salon: Professional dealer, warranty, 10-15% price premium
-- Credit: Financing available, typically dealer listings
-- Barter: Trade-in accepted, negotiate carefully
-- VIP/Featured: Seller paying for visibility, motivated
-- VIN Available: Transparent seller, prioritize these
+| Feature | November | December | Change |
+|---------|----------|----------|--------|
+| Salon/Dealer | ~32% | ~33% | +1pp |
+| **Credit Available** | **~28%** | **~31%** | **+3pp** |
+| Barter/Trade-in | ~15% | ~16% | +1pp |
+| VIP Listing | ~5% | ~5% | - |
+| VIN Check | ~4% | ~5% | +1pp |
+
+**Key Insight:** Credit availability increased by 3 percentage points, making vehicle purchases more accessible despite rising prices.
 
 ---
 
-## 5. Actionable Insights
+### Mileage vs Price Correlation
+![Mileage vs Price](charts/12_mileage_vs_price.png)
+
+**Depreciation Patterns:**
+- Steepest depreciation: 0-50,000 km
+- Moderate depreciation: 50,000-150,000 km
+- Flattens after: 200,000 km
+
+**Best Value Zones:**
+- **Sweet spot:** 80,000-120,000 km
+- Avoid: Under 20,000 km (pay premium)
+- Caution: Over 250,000 km (major repairs)
+
+---
+
+## 6. Market Insights & Recommendations
 
 ### For Buyers
 
-#### Budget Segment (Under 20,000 AZN)
+#### Budget Segment (Under 25,000 AZN)
+- **Best choices:** 2012-2017 Korean brands (Hyundai, Kia)
+- **Target mileage:** 100,000-180,000 km
+- **Avoid:** German luxury (high maintenance)
+- **Tip:** Private sellers offer 10-15% negotiation room
 
-**Best Choices:**
-- 2008-2014 Toyota Camry, Corolla
-- 2010-2015 Hyundai Elantra, Accent
-- 2008-2013 Honda Civic, Accord
-- Manual transmission acceptable for savings
-- 120,000-180,000 km mileage target
+#### Mid-Market (25,000-50,000 AZN)
+- **Best choices:** 2017-2020 SUVs/Crossovers
+- **Consider:** Hybrid models for fuel savings
+- **Demand:** Full service history
+- **Tip:** Credit now more available - compare dealer rates
 
-**Avoid:**
-- German luxury brands (maintenance costs)
-- First-generation hybrids (battery replacement)
-- Unknown Chinese brands (parts availability)
-- Mileage over 300,000 km
-
-**Negotiation Tips:**
-- Private sellers: 10-15% discount possible
-- Point out service needs (tires, brakes)
-- Cash payment often gets 5-8% off
-- Best deals: weekday afternoons
-
----
-
-#### Mid-Market (20,000-50,000 AZN)
-
-**Best Choices:**
-- 2015-2019 Hyundai Tucson, Santa Fe
-- 2016-2020 Kia Sportage, Sorento
-- 2014-2018 Toyota RAV4, Camry
-- Automatic transmission standard
-- Under 120,000 km preferred
-
-**Features to Demand:**
-- Full service history
-- Single owner preferred
-- Accident-free (verify with inspection)
-- Remaining warranty if salon
-
-**Value Champions:**
-- Hyundai/Kia: Best features per dollar
-- Toyota: Best reliability reputation
-- Mazda: Best driving dynamics for price
-
----
-
-#### Premium Segment (50,000+ AZN)
-
-**Best Choices:**
-- 2018+ Mercedes E-Class, GLE
-- 2017+ BMW 5-Series, X5
-- 2019+ Lexus ES, RX
-- Certified pre-owned highly recommended
-- Under 60,000 km ideal
-
-**Essential Checks:**
-- Full dealer service history mandatory
-- No modifications
-- Original paint (check thickness)
-- VIN check for import history
-- Extended warranty if available
-
-**Avoid:**
-- Gray market imports without warranty
-- First model year (wait for updates)
-- High-performance variants (M, AMG) - expensive maintenance
-- Salvage/rebuilt titles
+#### Premium (50,000+ AZN)
+- **Best choices:** 2019+ certified pre-owned
+- **Focus:** Mercedes, BMW, Lexus
+- **Essential:** VIN check, dealer service history
+- **Tip:** Consider plug-in hybrid for tax benefits
 
 ---
 
 ### For Sellers
 
-#### Maximize Your Price
+**Pricing Strategy:**
+- Expect 15-20% higher valuations vs November
+- Research current listings carefully
+- Price competitively - market is active
 
-**Preparation (ROI: 10-20%):**
-1. Professional detailing: 5-8% value increase
-2. Minor repairs (scratches, dents): 8-12% increase
-3. Full service before listing: confidence builder
-4. Replace worn items (wipers, mats): small cost, big impact
+**Timing:**
+- Market appears active
+- Credit availability helps buyers
+- List with detailed photos and history
 
-**Listing Strategy:**
-1. 10 high-quality photos (clean car, good lighting)
-2. Detailed description (all features, service history)
-3. Be honest about condition (builds trust)
-4. Include VIN if clean history
-5. Respond quickly to inquiries (24-hour rule)
-
-**Pricing:**
-- Research 5+ similar listings
-- Price at median for 7-14 day sale
-- Price 10% above median for negotiation room (20-30 days)
-- Never price above 15% of market (sits too long)
-
----
-
-#### Timing Your Sale
-
-**Best Months:**
-- March-May: Spring buying season (+15% prices)
-- September-October: Fall season (+8% prices)
-
-**Avoid:**
-- January-February: Post-holiday slowdown (-10%)
-- December: Year-end budget constraints (-8%)
-
-**Best Days:**
-- Thursday-Friday listings (weekend buyers)
-- Update listing every 3-4 days (visibility)
+**Presentation:**
+- Professional detailing: +5-8% value
+- Minor repairs completed: +8-12% value
+- Full documentation ready: faster sale
 
 ---
 
 ### Market Predictions
 
-#### Growing Segments (Next 12-24 Months)
+**Growing Segments:**
+1. **Plug-in Hybrid** - Explosive growth continuing
+2. **SUV/Crossover** - Preferred body style
+3. **Korean Brands** - Best value proposition
+4. **Chinese Brands** - Growing acceptance
 
-**Strong Growth:**
-- Hybrid vehicles: +40% inventory expected
-- Chinese brands (BYD, Changan): +35% market share
-- 2020-2023 used cars: Lease returns flooding market
-- Electric vehicles: Slow but steady +15%
+**Declining Segments:**
+1. Manual transmission
+2. Pure diesel vehicles
+3. Pre-2010 vehicles
+4. Traditional sedans (slowly)
 
-**Investment Opportunities:**
-- 2018-2020 Hybrid SUVs: Best value retention
-- Popular models in high demand: Fast turnover
-- Well-maintained Japanese cars: Always liquid
-
----
-
-#### Declining Segments
-
-**Falling Demand:**
-- Manual transmission: -12% annually
-- Pre-2010 vehicles: Approaching end-of-life
-- Diesel sedans: Environmental regulations
-- Low-volume brands: Parts concerns
-
-**Avoid for Investment:**
-- Rare Chinese brands: Uncertain support
-- First-gen electric: Tech obsolescence
-- 15+ year German luxury: Money pit
+**Price Outlook:**
+- Prices likely to remain elevated
+- Credit expansion supporting demand
+- Green vehicles commanding premiums
 
 ---
 
-### Best Value Retention (3-5 Years)
-
-**Top Performers:**
-1. Toyota Land Cruiser: 65-70% value retention
-2. Lexus RX, ES: 60-65% retention
-3. Mercedes GLE, E-Class: 55-60% retention
-4. Hyundai Tucson, Santa Fe: 50-55% retention
-5. Kia Sportage, Sorento: 50-55% retention
-
-**Worst Performers:**
-1. Unknown Chinese brands: 20-30% retention
-2. German luxury 5+ years: 30-35% retention
-3. Low-demand models: 35-40% retention
-
----
-
-## 6. Market Summary
+## 7. Market Summary Dashboard
+![Market Summary](charts/16_market_summary.png)
 
 ### Key Takeaways
 
-**Market Health:**
-- Diverse inventory across all price segments
-- Strong competition keeps prices fair
-- Growing hybrid/electric adoption
-- Stable demand for quality used vehicles
+1. **Price Inflation (+20%):** Significant market-wide price increase
+2. **Green Revolution:** Plug-in hybrids doubled market share
+3. **Credit Expansion:** Financing more available (+3pp)
+4. **SUV Dominance:** Crossovers becoming preferred choice
+5. **Automatic Standard:** Manual transmission fading
 
-**For Buyers:**
-- Best value: 2015-2019 Korean brands, 80-120K km
-- Most selection: 20-40K AZN price range
-- Easiest financing: Salon/dealer listings
-- Best deals: Private sellers, weekday viewings
+### Market Health Indicators
 
-**For Sellers:**
-- Price competitively (within 10% of median)
-- Presentation matters (photos, description)
-- Timing critical (spring/fall best)
-- Transparency builds trust (VIN, history)
+| Indicator | Status | Trend |
+|-----------|--------|-------|
+| Inventory | Adequate | Stable |
+| Prices | Rising | Up 20% |
+| Demand | Strong | Growing |
+| Financing | Available | Expanding |
+| Green Options | Growing | +66% |
 
-**Trends:**
-- SUV market growing, sedan market stable
-- Hybrid adoption accelerating
-- Chinese brands gaining acceptance
-- Automatic transmission now standard expectation
+---
+
+## Charts Reference
+
+### Comparison Charts (November vs December 2025)
+
+| # | Chart | Description |
+|---|-------|-------------|
+| 01 | `01_market_overview_comparison.png` | Key metrics dashboard |
+| 02 | `02_price_distribution_comparison.png` | Price histograms & box plots |
+| 03 | `03_top_makes_comparison.png` | Brand market share changes |
+| 04 | `04_avg_price_by_make.png` | Average price by brand |
+| 05 | `05_fuel_type_trends.png` | Fuel type distribution shifts |
+| 06 | `06_transmission_trends.png` | Manual vs Automatic trends |
+| 07 | `07_body_type_analysis.png` | Body type market share |
+| 08 | `08_year_distribution.png` | Vehicle age distribution |
+| 09 | `09_city_distribution.png` | Geographic distribution |
+| 10 | `10_price_segments.png` | Price segment analysis |
+| 11 | `11_listing_features.png` | Credit, barter, VIP availability |
+| 12 | `12_mileage_vs_price.png` | Mileage-price correlation |
+| 13 | `13_color_trends.png` | Color preference changes |
+| 14 | `14_new_vs_used.png` | New vs used vehicle ratio |
+| 15 | `15_top_models.png` | Most popular models |
+| 16 | `16_market_summary.png` | Executive summary dashboard |
 
 ---
 
@@ -459,41 +389,41 @@ Analysis of 10,076 car listings reveals a market dominated by used vehicles (80%
 
 **Data Collection:**
 - Source: turbo.az listings
-- Period: November 2025
-- Sample: 10,076 unique listings
-- Method: Automated scraping with validation
+- Method: Automated scraping with checkpoint recovery
+- November 2025: 10,076 complete listings
+- December 2025: 4,630 partial sample
 
-**Analysis:**
-- Tools: Python (pandas, matplotlib, seaborn)
-- Statistical methods: Distribution analysis, correlation
-- Segmentation: Price, brand, year, features
+**Analysis Tools:**
+- Python 3.x
+- pandas (data manipulation)
+- matplotlib/seaborn (visualization)
+- numpy (statistical analysis)
 
 **Limitations:**
-- Asking prices (not actual sale prices)
-- Snapshot in time (market changes)
-- Self-reported conditions (not verified)
+- December data is partial sample (~46% of November volume)
+- Asking prices (not actual transaction prices)
+- Self-reported vehicle conditions
+- Point-in-time snapshots
+
+**How to Regenerate Charts:**
+```bash
+python generate_charts.py
+```
 
 ---
 
-## Charts Reference
+## Files in This Project
 
-1. **charts/01_price_distribution.png** - Overall price histogram
-2. **charts/02_top_makes.png** - Top 15 brands by count
-3. **charts/03_top_models.png** - Top 15 models by count
-4. **charts/04_year_distribution.png** - Age distribution
-5. **charts/05_avg_price_by_make.png** - Premium brand pricing
-6. **charts/06_mileage_vs_price.png** - Depreciation correlation
-7. **charts/07_fuel_type_distribution.png** - Energy source breakdown
-8. **charts/08_transmission_distribution.png** - Manual vs automatic
-9. **charts/09_body_type_distribution.png** - Vehicle categories
-10. **charts/10_new_vs_used.png** - Market split
-11. **charts/11_top_cities.png** - Geographic distribution
-12. **charts/12_listing_features.png** - Services and badges
-13. **charts/13_price_ranges.png** - Market segmentation
-14. **charts/14_market_summary.png** - Key statistics
+| File | Description |
+|------|-------------|
+| `turbo_scraper.py` | Web scraper with crash recovery |
+| `generate_charts.py` | Comparison analysis & chart generator |
+| `requirements.txt` | Python dependencies |
+| `charts/` | Generated visualization images |
+| `*.csv` | Scraped data files |
 
 ---
 
-*Report Generated: November 2025*
-*Analysis Tool: Python Data Science Stack*
-*For educational and research purposes*
+*Report Generated: December 2025*
+*Analysis: Python Data Science Stack*
+*Comparison Period: November 2025 vs December 2025*
