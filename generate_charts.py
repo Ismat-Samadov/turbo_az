@@ -370,30 +370,58 @@ def chart_05_fuel_type_trends(df_old, df_new):
     all_fuels = list(set(fuel_old.index.tolist() + fuel_new.index.tolist()))
     all_fuels = [f for f in all_fuels if pd.notna(f) and f != '']
 
-    # Pie charts
-    ax = axes[0]
-    ax.pie(fuel_old.values, labels=fuel_old.index, autopct='%1.1f%%', colors=COLORS_PALETTE)
-    ax.set_title('November 2025')
-
-    ax = axes[1]
-    ax.pie(fuel_new.values, labels=fuel_new.index, autopct='%1.1f%%', colors=COLORS_PALETTE)
-    ax.set_title('December 2025')
-
-    # Change bar chart
-    ax = axes[2]
+    # Get common fuel types
     fuels = fuel_old.head(6).index.tolist()
     counts_old = [fuel_old.get(f, 0) for f in fuels]
     counts_new = [fuel_new.get(f, 0) for f in fuels]
 
+    # Bar chart - counts
+    ax = axes[0]
     x = np.arange(len(fuels))
     width = 0.35
-    ax.bar(x - width/2, counts_old, width, label='November', color=COLORS_OLD, edgecolor='black')
-    ax.bar(x + width/2, counts_new, width, label='December', color=COLORS_NEW, edgecolor='black')
+    ax.bar(x - width/2, counts_old, width, label='November 2025', color=COLORS_OLD, edgecolor='black')
+    ax.bar(x + width/2, counts_new, width, label='December 2025', color=COLORS_NEW, edgecolor='black')
     ax.set_xticks(x)
     ax.set_xticklabels(fuels, rotation=45, ha='right')
     ax.set_ylabel('Number of Listings')
-    ax.set_title('Fuel Type Comparison')
+    ax.set_title('Fuel Type Count Comparison')
     ax.legend()
+
+    # Bar chart - percentages
+    ax = axes[1]
+    total_old = sum(counts_old)
+    total_new = sum(counts_new)
+    pct_old = [(c / total_old * 100) if total_old > 0 else 0 for c in counts_old]
+    pct_new = [(c / total_new * 100) if total_new > 0 else 0 for c in counts_new]
+
+    ax.bar(x - width/2, pct_old, width, label='November 2025', color=COLORS_OLD, edgecolor='black')
+    ax.bar(x + width/2, pct_new, width, label='December 2025', color=COLORS_NEW, edgecolor='black')
+    ax.set_xticks(x)
+    ax.set_xticklabels(fuels, rotation=45, ha='right')
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('Fuel Type Market Share')
+    ax.legend()
+
+    # Change bar chart
+    ax = axes[2]
+    pct_changes = []
+    for old, new in zip(counts_old, counts_new):
+        if old > 0:
+            pct_changes.append(((new - old) / old) * 100)
+        else:
+            pct_changes.append(100 if new > 0 else 0)
+
+    colors = ['green' if x >= 0 else 'red' for x in pct_changes]
+    bars = ax.bar(fuels, pct_changes, color=colors, edgecolor='black')
+    ax.axhline(y=0, color='black', linewidth=1)
+    ax.set_xticklabels(fuels, rotation=45, ha='right')
+    ax.set_ylabel('Percentage Change (%)')
+    ax.set_title('Fuel Type Change')
+
+    for bar, val in zip(bars, pct_changes):
+        y_pos = bar.get_height() + 2 if val >= 0 else bar.get_height() - 5
+        ax.text(bar.get_x() + bar.get_width()/2, y_pos, f'{val:+.1f}%',
+                ha='center', fontsize=9, fontweight='bold')
 
     plt.tight_layout()
     plt.savefig(f'{CHARTS_DIR}/05_fuel_type_trends.png', dpi=150, bbox_inches='tight',
@@ -821,23 +849,12 @@ def chart_14_new_vs_used(df_old, df_new):
     new_new = (df_new['is_new'] == 'Bəli').sum()
     used_new = (df_new['is_new'] == 'Xeyr').sum()
 
-    # Pie charts
-    ax = axes[0]
-    ax.pie([new_old, used_old], labels=['New', 'Used'], autopct='%1.1f%%',
-           colors=['#2ecc71', '#e74c3c'], explode=[0.05, 0])
-    ax.set_title('November 2025')
-
-    ax = axes[1]
-    ax.pie([new_new, used_new], labels=['New', 'Used'], autopct='%1.1f%%',
-           colors=['#2ecc71', '#e74c3c'], explode=[0.05, 0])
-    ax.set_title('December 2025')
-
-    # Comparison bar
-    ax = axes[2]
     categories = ['New Cars', 'Used Cars']
     counts_old = [new_old, used_old]
     counts_new = [new_new, used_new]
 
+    # Bar chart - counts
+    ax = axes[0]
     x = np.arange(len(categories))
     width = 0.35
     ax.bar(x - width/2, counts_old, width, label='November 2025', color=COLORS_OLD, edgecolor='black')
@@ -845,15 +862,48 @@ def chart_14_new_vs_used(df_old, df_new):
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
     ax.set_ylabel('Number of Listings')
-    ax.set_title('New vs Used Comparison')
+    ax.set_title('New vs Used Count')
     ax.legend()
 
-    # Add change labels
-    for i, (old, new) in enumerate(zip(counts_old, counts_new)):
+    # Bar chart - percentages
+    ax = axes[1]
+    total_old = sum(counts_old)
+    total_new = sum(counts_new)
+    pct_old = [(c / total_old * 100) if total_old > 0 else 0 for c in counts_old]
+    pct_new = [(c / total_new * 100) if total_new > 0 else 0 for c in counts_new]
+
+    ax.bar(x - width/2, pct_old, width, label='November 2025', color=COLORS_OLD, edgecolor='black')
+    ax.bar(x + width/2, pct_new, width, label='December 2025', color=COLORS_NEW, edgecolor='black')
+    ax.set_xticks(x)
+    ax.set_xticklabels(categories)
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('New vs Used Market Share')
+    ax.legend()
+
+    # Add value labels
+    for i, (old_pct, new_pct) in enumerate(zip(pct_old, pct_new)):
+        ax.text(i - width/2, old_pct + 1, f'{old_pct:.1f}%', ha='center', fontsize=9)
+        ax.text(i + width/2, new_pct + 1, f'{new_pct:.1f}%', ha='center', fontsize=9)
+
+    # Change comparison bar
+    ax = axes[2]
+    pct_changes = []
+    for old, new in zip(counts_old, counts_new):
         if old > 0:
-            change = ((new - old) / old) * 100
-            ax.text(i, max(old, new) + 100, f'{change:+.1f}%', ha='center',
-                    fontweight='bold', color='green' if change >= 0 else 'red')
+            pct_changes.append(((new - old) / old) * 100)
+        else:
+            pct_changes.append(100 if new > 0 else 0)
+
+    colors = ['green' if x >= 0 else 'red' for x in pct_changes]
+    bars = ax.bar(categories, pct_changes, color=colors, edgecolor='black')
+    ax.axhline(y=0, color='black', linewidth=1)
+    ax.set_ylabel('Percentage Change (%)')
+    ax.set_title('New vs Used Change')
+
+    for bar, val in zip(bars, pct_changes):
+        y_pos = bar.get_height() + 2 if val >= 0 else bar.get_height() - 5
+        ax.text(bar.get_x() + bar.get_width()/2, y_pos, f'{val:+.1f}%',
+                ha='center', fontsize=10, fontweight='bold')
 
     plt.tight_layout()
     plt.savefig(f'{CHARTS_DIR}/14_new_vs_used.png', dpi=150, bbox_inches='tight',
@@ -932,17 +982,25 @@ def chart_16_market_summary(stats_old, stats_new, df_old, df_new):
             spine.set_visible(True)
             spine.set_color('#dee2e6')
 
-    # Top makes pie
+    # Top makes bar chart
     ax = fig.add_subplot(gs[1, :2])
     makes_new = df_new['make'].value_counts().head(8)
-    ax.pie(makes_new.values, labels=makes_new.index, autopct='%1.1f%%', colors=COLORS_PALETTE)
+    bars = ax.barh(makes_new.index[::-1], makes_new.values[::-1], color=COLORS_PALETTE[:8], edgecolor='black')
+    ax.set_xlabel('Number of Listings')
     ax.set_title('Top Makes (December 2025)', fontsize=12, fontweight='bold')
+    for bar in bars:
+        ax.text(bar.get_width() + 10, bar.get_y() + bar.get_height()/2,
+                f'{int(bar.get_width())}', va='center', fontsize=9)
 
-    # Fuel types pie
+    # Fuel types bar chart
     ax = fig.add_subplot(gs[1, 2:])
-    fuel_new = df_new['fuel_type'].value_counts()
-    ax.pie(fuel_new.values, labels=fuel_new.index, autopct='%1.1f%%', colors=COLORS_PALETTE)
+    fuel_new = df_new['fuel_type'].value_counts().head(6)
+    bars = ax.barh(fuel_new.index[::-1], fuel_new.values[::-1], color=COLORS_PALETTE[:6], edgecolor='black')
+    ax.set_xlabel('Number of Listings')
     ax.set_title('Fuel Types (December 2025)', fontsize=12, fontweight='bold')
+    for bar in bars:
+        ax.text(bar.get_width() + 10, bar.get_y() + bar.get_height()/2,
+                f'{int(bar.get_width())}', va='center', fontsize=9)
 
     # Key findings text
     ax = fig.add_subplot(gs[2, :])
