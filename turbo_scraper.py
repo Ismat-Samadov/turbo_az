@@ -186,8 +186,12 @@ class TurboAzScraper:
 
         connector = aiohttp.TCPConnector(ssl=ssl_context)
 
+        # Create cookie jar to maintain session cookies for AJAX requests
+        cookie_jar = aiohttp.CookieJar()
+
         self.session = aiohttp.ClientSession(
             connector=connector,
+            cookie_jar=cookie_jar,
             headers={
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept-Language': 'az,en-US;q=0.9,en;q=0.8',
@@ -265,6 +269,67 @@ class TurboAzScraper:
         if not text:
             return ""
         return ' '.join(text.strip().split())
+
+    def extract_csrf_token(self, html: str) -> Optional[str]:
+        """Extract CSRF token from HTML for AJAX requests"""
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Try to find CSRF token in meta tag
+        csrf_meta = soup.find('meta', {'name': 'csrf-token'})
+        if csrf_meta and csrf_meta.get('content'):
+            return csrf_meta.get('content')
+
+        # Try to find in form input
+        csrf_input = soup.find('input', {'name': 'authenticity_token'})
+        if csrf_input and csrf_input.get('value'):
+            return csrf_input.get('value')
+
+        # Try to find in JavaScript/page source
+        match = re.search(r'"authenticity_token"\s*value="([^"]+)"', html)
+        if match:
+            return match.group(1)
+
+        match = re.search(r'authenticity_token.*?value="([^"]+)"', html)
+        if match:
+            return match.group(1)
+
+        return None
+
+    async def fetch_phone_numbers(self, listing_id: str, listing_url: str, csrf_token: Optional[str] = None) -> str:
+        """Fetch phone numbers via AJAX endpoint"""
+        from urllib.parse import quote
+
+        # Build the show_phones URL
+        encoded_url = quote(listing_url, safe='')
+        phone_url = f"{self.base_url}/autos/{listing_id}/show_phones?trigger_button=main&source_link={encoded_url}"
+
+        headers = {
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Referer': listing_url,
+        }
+
+        # Add CSRF token if available
+        if csrf_token:
+            headers['X-CSRF-Token'] = csrf_token
+
+        try:
+            async with self.semaphore:
+                await asyncio.sleep(self.delay_between_requests)
+                async with self.session.get(phone_url, headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        phones = data.get('phones', [])
+                        if phones:
+                            # Extract primary formatted phone numbers
+                            phone_list = [phone.get('primary', phone.get('raw', '')) for phone in phones]
+                            return ' | '.join(phone_list)
+                    else:
+                        logger.warning(f"Failed to fetch phones for {listing_id}: Status {response.status}")
+        except Exception as e:
+            logger.warning(f"Error fetching phones for {listing_id}: {e}")
+
+        return ""
 
     def parse_listing_page(self, html: str, url: str, badges: Dict[str, bool] = None) -> CarListing:
         """Parse individual car listing page"""
@@ -410,6 +475,17 @@ class TurboAzScraper:
 
         try:
             listing = self.parse_listing_page(html, url, badges)
+
+            # Extract phone numbers via AJAX endpoint
+            if listing.listing_id:
+                csrf_token = self.extract_csrf_token(html)
+                phone_numbers = await self.fetch_phone_numbers(listing.listing_id, url, csrf_token)
+                if phone_numbers:
+                    listing.seller_phone = phone_numbers
+                    logger.info(f"[PHONE] {listing.listing_id}: {phone_numbers}")
+                else:
+                    logger.debug(f"[NO PHONE] {listing.listing_id}")
+
             self.scraped_urls.add(url)
             logger.info(f"[OK] {listing.listing_id}: {listing.title}")
             return listing
