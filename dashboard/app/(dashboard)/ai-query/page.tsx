@@ -31,11 +31,20 @@ export default function AIQueryPage() {
 
       const data = await res.json()
 
-      // Check for Gemini API quota errors
-      if (data.error && data.error.includes("quota")) {
-        setResult({
-          error: "AI Query limit reached. The free tier quota has been exceeded. Please try again later or contact the administrator to upgrade the API plan."
-        })
+      // Check for errors in the response
+      if (data.result?.error) {
+        const errorMsg = data.result.error
+
+        // Check for Gemini API quota errors
+        if (errorMsg.includes("quota") || errorMsg.includes("429") || errorMsg.includes("Too Many Requests")) {
+          setResult({
+            error: "AI Query limit reached. The free tier quota has been exceeded. Please try again later or contact the administrator to upgrade the API plan."
+          })
+        } else {
+          setResult({
+            error: errorMsg
+          })
+        }
       } else {
         setResult(data)
       }
