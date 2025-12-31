@@ -564,7 +564,7 @@ export default function DashboardPage() {
                         {((stats.byMake?.slice(0, 3).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}% market share)
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Strategic Implication:</strong> High concentration indicates brand loyalty and potential partnership opportunities with dominant manufacturers.
+                        <strong>Lending Implication:</strong> High concentration indicates strong secondary market liquidity for these brands; maintain higher LTV ratios (up to 80%) for top 3 brands vs 70% for others.
                       </p>
                     </div>
                     <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
@@ -576,7 +576,7 @@ export default function DashboardPage() {
                         </span> market share
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Business Opportunity:</strong> Premium segment shows strong demand; consider inventory optimization for luxury brands.
+                        <strong>Lending Opportunity:</strong> Premium segment shows strong demand; develop high-value auto loan products (&gt;50,000 AZN) with competitive rates for creditworthy borrowers.
                       </p>
                     </div>
                   </div>
@@ -634,7 +634,7 @@ export default function DashboardPage() {
                         {((stats.byCity?.[0]?.count / stats.total) * 100).toFixed(1)}% of total market)
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Risk Factor:</strong> High geographic concentration creates dependency on single market; consider expansion to Sumqayıt and Gəncə.
+                        <strong>Credit Risk:</strong> High geographic concentration creates portfolio risk; implement Bakı lending limits (max 65% of auto loan book) and develop regional lending programs in Sumqayıt/Gəncə.
                       </p>
                     </div>
                     <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
@@ -684,7 +684,7 @@ export default function DashboardPage() {
                         </span>
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Market Signal:</strong> Nearly 4 in 5 buyers prefer automatic transmission; prioritize automatic inventory acquisition.
+                        <strong>Collateral Risk:</strong> Automatic vehicles maintain better resale value (79.3% market preference); apply 5% higher collateral valuation vs manual transmission for loan provisioning.
                       </p>
                     </div>
                     <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
@@ -714,7 +714,7 @@ export default function DashboardPage() {
                         </span> of inventory
                       </p>
                       <p className="text-xs text-gray-600">
-                        Quality distribution impacts financing options and warranty strategies
+                        Quality distribution impacts loan default risk and collateral recovery rates; apply stricter underwriting for damaged/accident vehicles
                       </p>
                     </div>
                     <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
@@ -722,35 +722,35 @@ export default function DashboardPage() {
                         <span className="font-semibold text-cyan-900">Risk exposure:</span> Monitor accident/damaged units ratio
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Recommendation:</strong> Implement rigorous inspection protocols for quality assurance
+                        <strong>Recommendation:</strong> Require independent vehicle inspection for loans &gt;30,000 AZN; increase provisioning for accident/damaged collateral by 15-20%
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Strategic Recommendations */}
+                {/* Strategic Recommendations for Banking */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 rounded-lg">
-                  <h3 className="font-bold text-lg mb-3">Strategic Action Items</h3>
+                  <h3 className="font-bold text-lg mb-3">Banking & Lending Strategy Recommendations</h3>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 font-bold">•</span>
-                      <span><strong>Inventory Optimization:</strong> Increase automatic transmission stock by 15% to meet market preference</span>
+                      <span><strong>Credit Risk - Automatic Transmission Premium:</strong> Vehicles with automatic transmission show {((stats.byTransmission?.find((t: any) => t.transmission?.toLowerCase() === 'automatic')?.count / stats.total) * 100).toFixed(1)}% market preference; apply favorable LTV ratios (up to 75%) vs manual (70%) due to higher resale liquidity</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 font-bold">•</span>
-                      <span><strong>Geographic Expansion:</strong> Establish presence in Sumqayıt and Gəncə to reduce Bakı dependency</span>
+                      <span><strong>Geographic Risk Concentration:</strong> Bakı represents {((stats.byCity?.[0]?.count / stats.total) * 100).toFixed(1)}% of market; consider regional lending caps to limit exposure; Sumqayıt/Gəncə offer diversification with 12% lower collateral values</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 font-bold">•</span>
-                      <span><strong>Premium Positioning:</strong> Leverage Mercedes dominance with targeted luxury marketing campaigns</span>
+                      <span><strong>Premium Segment Lending:</strong> Mercedes commands {((stats.byMake?.[0]?.count / stats.total) * 100).toFixed(1)}% market share with {stats.avgPriceByMake?.[0]?.avg_price?.toLocaleString()} AZN average; develop specialized luxury auto loan products targeting affluent customers</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 font-bold">•</span>
-                      <span><strong>Future-Ready:</strong> Develop hybrid/electric expertise as market share grows; anticipate 20% increase in next 12 months</span>
+                      <span><strong>Green Finance Initiative:</strong> Hybrid/electric vehicles growing to {((stats.byFuelType?.filter((f: any) => f.fuel_type?.toLowerCase().includes('hibrid') || f.fuel_type?.toLowerCase().includes('elektro')).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}% market share; introduce preferential "green loan" rates (0.5-1% discount) to capture emerging segment</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 font-bold">•</span>
-                      <span><strong>Risk Mitigation:</strong> Diversify brand portfolio beyond top 3 to reduce concentration risk</span>
+                      <span><strong>Portfolio Diversification:</strong> Top 3 brands control {((stats.byMake?.slice(0, 3).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}% of market; implement brand-level exposure limits to prevent concentration risk in loan portfolio</span>
                     </li>
                   </ul>
                 </div>
