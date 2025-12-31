@@ -10,7 +10,7 @@ print("="*80)
 print("COMPREHENSIVE DATA COMBINATION VERIFICATION")
 print("="*80)
 
-data_dir = "data"
+data_dir = "../data"
 
 # Load original files
 print("\n📥 STEP 1: Loading original CSV files...")

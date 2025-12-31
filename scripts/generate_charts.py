@@ -1093,8 +1093,8 @@ def main():
     print("="*60)
 
     # File paths
-    old_file = 'data/turbo_az_listings_combined_20251123_013059.csv'
-    new_file = 'data/turbo_az_listings_20251224_110136.csv'
+    old_file = '../data/turbo_az_listings_combined_20251123_013059.csv'
+    new_file = '../data/turbo_az_listings_20251224_110136.csv'
 
     # Load data
     print("\n[1/4] Loading data...")

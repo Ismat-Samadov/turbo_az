@@ -650,7 +650,7 @@ class TurboAzScraper:
             return
 
         if filename is None:
-            filename = f"data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = f"../data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
         data = [asdict(listing) for listing in self.scraped_listings]
         df = pd.DataFrame(data)
@@ -664,7 +664,7 @@ class TurboAzScraper:
             return
 
         if filename is None:
-            filename = f"data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"../data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
         data = [asdict(listing) for listing in self.scraped_listings]
         df = pd.DataFrame(data)
@@ -691,7 +691,7 @@ class TurboAzScraper:
             return
 
         if filename is None:
-            filename = f"data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filename = f"../data/turbo_az_listings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         data = [asdict(listing) for listing in self.scraped_listings]
 
