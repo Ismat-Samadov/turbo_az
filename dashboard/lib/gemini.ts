@@ -49,7 +49,9 @@ Columns:
 
 IMPORTANT QUERY RULES:
 1. Always use "scraping.turbo_az" as the table name (include the schema)
-2. For price queries, note that price_azn is stored as text (e.g., "50 000 AZN")
+2. For price queries, note that price_azn is stored as text with various formats (e.g., "50 000 AZN", "20500₼", "15 000 ₼")
+   - To sort by price numerically, use: CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL)
+   - This removes all non-numeric characters (spaces, AZN text, ₼ symbol, etc.)
 3. Popular makes: Mercedes, BMW, Toyota, Hyundai, Kia, Honda, etc.
 4. Years range from ~1980 to 2026
 5. Cities include: Bakı, Sumqayıt, Gəncə, Mingəçevir, etc.
@@ -62,6 +64,8 @@ EXAMPLE QUERIES:
 - "Top 5 makes" -> SELECT make, COUNT(*) as count FROM scraping.turbo_az GROUP BY make ORDER BY count DESC LIMIT 5
 - "Average year by make" -> SELECT make, AVG(year)::int as avg_year FROM scraping.turbo_az WHERE year IS NOT NULL GROUP BY make ORDER BY avg_year DESC LIMIT 10
 - "Listings by city" -> SELECT city, COUNT(*) as count FROM scraping.turbo_az WHERE city IS NOT NULL GROUP BY city ORDER BY count DESC
+- "Top 10 most expensive cars" -> SELECT title, make, model, year, price_azn FROM scraping.turbo_az WHERE price_azn IS NOT NULL ORDER BY CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL) DESC LIMIT 10
+- "Average price by make" -> SELECT make, AVG(CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL))::int as avg_price FROM scraping.turbo_az WHERE price_azn IS NOT NULL GROUP BY make ORDER BY avg_price DESC LIMIT 10
 
 Your task: Convert natural language questions into SQL queries that follow these rules.
 Return ONLY the SQL query, nothing else. Do not include markdown formatting or explanations.
