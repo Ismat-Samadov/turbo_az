@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { Brain, ArrowLeft } from "lucide-react"
+import { Brain, ArrowLeft, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function AIQueryPage() {
@@ -67,7 +67,7 @@ export default function AIQueryPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -81,6 +81,27 @@ export default function AIQueryPage() {
               <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 AI Query Tool
               </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {session?.user?.role === "admin" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/admin")}
+                  className="border-blue-200 hover:bg-blue-50 text-xs sm:text-sm h-8 px-2 sm:px-3"
+                >
+                  Admin
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="text-xs sm:text-sm h-8 px-2 sm:px-3"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
