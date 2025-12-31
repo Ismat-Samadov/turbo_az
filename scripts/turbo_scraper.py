@@ -23,6 +23,7 @@ import sys
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import execute_batch
+import requests
 
 # Configure logging
 logging.basicConfig(
@@ -34,6 +35,48 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+
+def send_telegram_message(bot_token: str, chat_ids: str, message: str):
+    """Send message to Telegram using bot API
+
+    Args:
+        bot_token: Telegram bot token
+        chat_ids: Comma-separated list of chat IDs
+        message: Message text to send
+    """
+    if not bot_token or not chat_ids:
+        logger.warning("Telegram credentials not configured, skipping notification")
+        return
+
+    # Parse chat IDs (support comma-separated values)
+    chat_id_list = [chat_id.strip() for chat_id in chat_ids.split(',') if chat_id.strip()]
+
+    if not chat_id_list:
+        logger.warning("No valid chat IDs found, skipping notification")
+        return
+
+    # Telegram API endpoint
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+
+    # Send to each chat ID
+    for chat_id in chat_id_list:
+        try:
+            payload = {
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+
+            response = requests.post(url, json=payload, timeout=10)
+
+            if response.status_code == 200:
+                logger.info(f"✅ Telegram notification sent to chat_id: {chat_id}")
+            else:
+                logger.error(f"❌ Failed to send Telegram message to {chat_id}: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            logger.error(f"❌ Error sending Telegram message to {chat_id}: {e}")
 
 
 @dataclass
@@ -185,6 +228,15 @@ class TurboAzScraper:
         self.scraped_urls: Set[str] = set()
         self.should_stop = False
 
+        # Statistics tracking
+        self.stats = {
+            'successful_scrapes': 0,
+            'failed_scrapes': 0,
+            'total_requests': 0,
+            'pages_processed': 0,
+            'duplicates_skipped': 0
+        }
+
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
@@ -259,6 +311,7 @@ class TurboAzScraper:
                     await asyncio.sleep(self.delay_between_requests)
                     # Use current proxy if configured
                     current_proxy = self._get_current_proxy()
+                    self.stats['total_requests'] += 1
                     async with self.session.get(url, proxy=current_proxy) as response:
                         if response.status == 200:
                             return await response.text()
@@ -560,6 +613,7 @@ class TurboAzScraper:
 
         html = await self.fetch_page(url)
         if not html:
+            self.stats['failed_scrapes'] += 1
             return None
 
         try:
@@ -576,10 +630,12 @@ class TurboAzScraper:
                     logger.debug(f"[NO PHONE] {listing.listing_id}")
 
             self.scraped_urls.add(url)
+            self.stats['successful_scrapes'] += 1
             logger.info(f"[OK] {listing.listing_id}: {listing.title}")
             return listing
         except Exception as e:
             logger.error(f"Error parsing {url}: {e}")
+            self.stats['failed_scrapes'] += 1
             return None
 
     async def scrape_page(self, page_num: int, base_search_url: str = None) -> List[Dict[str, any]]:
@@ -595,6 +651,7 @@ class TurboAzScraper:
             return []
 
         listing_data = self.extract_listing_urls(html)
+        self.stats['pages_processed'] += 1
         logger.info(f"Found {len(listing_data)} listings on page {page_num}")
         return listing_data
 
@@ -740,13 +797,13 @@ class TurboAzScraper:
         """Save scraped data to PostgreSQL database"""
         if not self.scraped_listings:
             logger.warning("No listings to save to PostgreSQL")
-            return
+            return {'inserted': 0, 'skipped': 0, 'total_in_db': 0}
 
         DATABASE_URL = os.getenv('DATABASE_URL')
         if not DATABASE_URL:
             logger.error("DATABASE_URL not found in environment variables")
             logger.error("Skipping PostgreSQL save")
-            return
+            return {'inserted': 0, 'skipped': 0, 'total_in_db': 0}
 
         logger.info("="*60)
         logger.info("SAVING TO POSTGRESQL")
@@ -973,14 +1030,24 @@ class TurboAzScraper:
 
             logger.info("="*60)
 
+            # Update scraper stats and return database statistics
+            self.stats['duplicates_skipped'] = total_skipped
+            return {
+                'inserted': total_inserted,
+                'skipped': total_skipped,
+                'total_in_db': total_in_db
+            }
+
         except psycopg2.Error as e:
             logger.error(f"PostgreSQL error: {e}")
             logger.error("Data was saved to CSV but not to database")
             if 'conn' in locals():
                 conn.rollback()
+            return {'inserted': 0, 'skipped': 0, 'total_in_db': 0}
         except Exception as e:
             logger.error(f"Error saving to PostgreSQL: {e}")
             logger.error("Data was saved to CSV but not to database")
+            return {'inserted': 0, 'skipped': 0, 'total_in_db': 0}
 
 
 async def main():
@@ -996,6 +1063,10 @@ async def main():
     MAX_CONCURRENT = int(os.getenv('MAX_CONCURRENT', '3'))
     DELAY = float(os.getenv('DELAY', '2'))
     AUTO_SAVE_INTERVAL = int(os.getenv('AUTO_SAVE_INTERVAL', '50'))
+
+    # Telegram Configuration
+    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 
     # BrightData Proxy Configuration from environment
     # Supports both single proxy and multiple proxies (comma-separated)
@@ -1022,6 +1093,8 @@ async def main():
     logger.info("="*60)
 
     start_time = time.time()
+    db_stats = {'inserted': 0, 'skipped': 0, 'total_in_db': 0}
+    scraper = None
 
     try:
         async with TurboAzScraper(
@@ -1038,21 +1111,92 @@ async def main():
 
             if listings:
                 # Save directly to PostgreSQL (no CSV backup)
-                scraper.save_to_postgres()
+                db_stats = scraper.save_to_postgres()
 
         elapsed_time = time.time() - start_time
+
+        # Calculate statistics
+        hours = int(elapsed_time // 3600)
+        minutes = int((elapsed_time % 3600) // 60)
+        seconds = int(elapsed_time % 60)
+        duration_str = f"{hours}h {minutes}m {seconds}s" if hours > 0 else f"{minutes}m {seconds}s"
+
+        # Estimate cost (rough estimate: BrightData residential proxy ~$5 per GB, assume ~50KB per request)
+        estimated_data_gb = (scraper.stats['total_requests'] * 50) / (1024 * 1024)  # Convert KB to GB
+        estimated_cost = estimated_data_gb * 5  # $5 per GB
+
         logger.info("="*60)
-        logger.info(f"Completed in {elapsed_time:.2f} seconds")
+        logger.info(f"Completed in {elapsed_time:.2f} seconds ({duration_str})")
         logger.info(f"Total listings: {len(listings)}")
         if listings:
             logger.info(f"Average time per listing: {elapsed_time/len(listings):.2f}s")
         logger.info("="*60)
 
+        # Send Telegram notification
+        if scraper and TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+            message = f"""<b>🚗 Turbo.az Scraping Complete!</b>
+
+⏱ <b>Duration:</b> {duration_str}
+📊 <b>Pages Processed:</b> {scraper.stats['pages_processed']}
+
+<b>Listings Stats:</b>
+✅ Successful: {scraper.stats['successful_scrapes']}
+❌ Failed: {scraper.stats['failed_scrapes']}
+📝 Total Scraped: {len(listings)}
+
+<b>Database Stats:</b>
+💾 Inserted: {db_stats['inserted']}
+⚠️ Duplicates Skipped: {db_stats['skipped']}
+📚 Total in DB: {db_stats['total_in_db']:,}
+
+<b>Network Stats:</b>
+🌐 Total Requests: {scraper.stats['total_requests']}
+💰 Est. Cost: ${estimated_cost:.2f}
+
+<b>Performance:</b>
+⚡ Avg Time/Listing: {elapsed_time/len(listings):.2f}s
+🎯 Success Rate: {(scraper.stats['successful_scrapes']/(scraper.stats['successful_scrapes']+scraper.stats['failed_scrapes'])*100):.1f}%
+"""
+            send_telegram_message(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, message)
+
     except KeyboardInterrupt:
         logger.warning("\nInterrupted by user. Progress saved!")
+
+        # Send notification even on interruption
+        if scraper and TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+            elapsed_time = time.time() - start_time
+            hours = int(elapsed_time // 3600)
+            minutes = int((elapsed_time % 3600) // 60)
+            seconds = int(elapsed_time % 60)
+            duration_str = f"{hours}h {minutes}m {seconds}s" if hours > 0 else f"{minutes}m {seconds}s"
+
+            message = f"""<b>⚠️ Turbo.az Scraping Interrupted!</b>
+
+⏱ <b>Duration:</b> {duration_str}
+📊 <b>Pages Processed:</b> {scraper.stats['pages_processed']}
+
+<b>Partial Stats:</b>
+✅ Successful: {scraper.stats['successful_scrapes']}
+❌ Failed: {scraper.stats['failed_scrapes']}
+📝 Scraped Before Stop: {len(scraper.scraped_listings)}
+
+💡 Progress saved - run again to resume!
+"""
+            send_telegram_message(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, message)
+
     except Exception as e:
         logger.error(f"Fatal error: {e}")
         logger.info("Progress saved to checkpoint. Run again to resume.")
+
+        # Send error notification
+        if scraper and TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+            message = f"""<b>❌ Turbo.az Scraping Error!</b>
+
+<b>Error:</b> {str(e)}
+
+💡 Progress saved - run again to resume!
+"""
+            send_telegram_message(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, message)
 
 
 if __name__ == "__main__":
