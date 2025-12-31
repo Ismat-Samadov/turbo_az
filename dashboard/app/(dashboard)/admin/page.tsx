@@ -46,7 +46,8 @@ export default function AdminPage() {
     e.preventDefault()
     setIsCreating(true)
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const name = formData.get("name") as string
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -60,8 +61,7 @@ export default function AdminPage() {
       })
 
       if (res.ok) {
-        // Reset form before closing to avoid null reference
-        e.currentTarget.reset()
+        form.reset()
         setMessage({ type: 'success', text: 'User created successfully!' })
         setShowCreateForm(false)
         fetchUsers()
@@ -266,6 +266,7 @@ export default function AdminPage() {
                       name="password"
                       type="password"
                       placeholder="Minimum 6 characters"
+                      autoComplete="new-password"
                       required
                       minLength={6}
                       disabled={isCreating}
