@@ -51,7 +51,7 @@ IMPORTANT QUERY RULES:
 1. Always use "scraping.turbo_az" as the table name (include the schema)
 2. For price queries, note that price_azn is stored as text (e.g., "50 000 AZN")
 3. Popular makes: Mercedes, BMW, Toyota, Hyundai, Kia, Honda, etc.
-4. Years range from ~1980 to 2025
+4. Years range from ~1980 to 2026
 5. Cities include: Bakı, Sumqayıt, Gəncə, Mingəçevir, etc.
 6. When counting or aggregating, use appropriate GROUP BY clauses
 7. For chart data, return results in a clean format with clear column names
@@ -68,7 +68,7 @@ Return ONLY the SQL query, nothing else. Do not include markdown formatting or e
 `
 
 export async function generateSQLQuery(userQuestion: string): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
   const prompt = `${DATABASE_SCHEMA}
 
@@ -134,7 +134,7 @@ export async function answerQuestion(userQuestion: string): Promise<{
     }
 
     // Generate explanation
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
     const explanationPrompt = `
 User asked: "${userQuestion}"
 

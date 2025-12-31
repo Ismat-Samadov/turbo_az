@@ -1,8 +1,11 @@
 # Azerbaijan Automotive Market Intelligence Report
 
 **Market Snapshot:** December 2025
+
 **Data Source:** Turbo.az Platform
+
 **Market Coverage:** 13,745 Active Vehicle Listings
+
 **Total Inventory Value:** 509.8 Million AZN
 
 ---
@@ -392,6 +395,8 @@ The Azerbaijan automotive market represents a significant commercial opportunity
 ---
 
 *Market Intelligence Report Generated: December 2025*
+
 *Data Source: Turbo.az Platform (13,745 listings)*
+
 *Report Focus: Strategic Business Insights & Decision Support*
 
