@@ -21,30 +21,9 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const queries = [
-          "SELECT COUNT(*) as total FROM scraping.turbo_az",
-          "SELECT make, COUNT(*) as count FROM scraping.turbo_az WHERE make IS NOT NULL GROUP BY make ORDER BY count DESC LIMIT 8",
-          "SELECT city, COUNT(*) as count FROM scraping.turbo_az WHERE city IS NOT NULL GROUP BY city ORDER BY count DESC LIMIT 6",
-          "SELECT fuel_type, COUNT(*) as count FROM scraping.turbo_az WHERE fuel_type IS NOT NULL GROUP BY fuel_type ORDER BY count DESC LIMIT 5",
-        ]
-
-        const results = await Promise.all(
-          queries.map(async (query) => {
-            const res = await fetch("/api/ai/query", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ question: query }),
-            })
-            return res.json()
-          })
-        )
-
-        setStats({
-          total: results[0]?.result?.data?.[0]?.total || 0,
-          byMake: results[1]?.result?.data || [],
-          byCity: results[2]?.result?.data || [],
-          byFuelType: results[3]?.result?.data || [],
-        })
+        const res = await fetch("/api/stats")
+        const data = await res.json()
+        setStats(data)
       } catch (error) {
         console.error("Error fetching stats:", error)
       }
