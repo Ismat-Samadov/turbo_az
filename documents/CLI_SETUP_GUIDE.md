@@ -59,8 +59,7 @@ The script will:
 - ✅ Check GitHub CLI installation
 - ✅ Authenticate if needed
 - ✅ Read secrets from .env file
-- ✅ Set DATABASE_URL secret
-- ✅ Set PROXY_URL secret
+- ✅ Set all required secrets (DATABASE_URL, PROXY_URL, START_PAGE, END_PAGE, BASE_URL, MAX_CONCURRENT, DELAY, AUTO_SAVE_INTERVAL)
 - ✅ Verify secrets were set
 
 ---
@@ -95,39 +94,63 @@ git remote add origin https://github.com/USERNAME/turbo_az.git
 #### Method A: From .env file (Recommended)
 
 ```bash
-# Set DATABASE_URL from .env
-grep "^DATABASE_URL=" .env | cut -d '=' -f2- | gh secret set DATABASE_URL
+# Set all scraping configuration secrets
+grep "^START_PAGE=" .env | cut -d '=' -f2- | gh secret set START_PAGE
+grep "^END_PAGE=" .env | cut -d '=' -f2- | gh secret set END_PAGE
+grep "^BASE_URL=" .env | cut -d '=' -f2- | gh secret set BASE_URL
+grep "^MAX_CONCURRENT=" .env | cut -d '=' -f2- | gh secret set MAX_CONCURRENT
+grep "^DELAY=" .env | cut -d '=' -f2- | gh secret set DELAY
+grep "^AUTO_SAVE_INTERVAL=" .env | cut -d '=' -f2- | gh secret set AUTO_SAVE_INTERVAL
 
-# Set PROXY_URL from .env
+# Set database and proxy secrets
 grep "^PROXY_URL=" .env | cut -d '=' -f2- | gh secret set PROXY_URL
+grep "^DATABASE_URL=" .env | cut -d '=' -f2- | gh secret set DATABASE_URL
 ```
 
 #### Method B: Enter Manually
 
 ```bash
-# Set DATABASE_URL
-gh secret set DATABASE_URL
+# Set scraping configuration
+gh secret set START_PAGE              # Enter: 1
+gh secret set END_PAGE                # Enter: 1770
+gh secret set BASE_URL                # Enter: https://turbo.az/autos
+gh secret set MAX_CONCURRENT          # Enter: 3
+gh secret set DELAY                   # Enter: 1
+gh secret set AUTO_SAVE_INTERVAL      # Enter: 50
 
-# Paste when prompted:
-# postgresql://myfrog_me_owner:ErAVlQSW06Ih@ep-red-dew-a22obfoo.eu-central-1.aws.neon.tech/myfrog_me?sslmode=require
-
-# Set PROXY_URL
+# Set proxy URL
 gh secret set PROXY_URL
-
 # Paste when prompted:
 # http://brd-customer-hl_cc079cd9-zone-residential_proxy1:ja1dl6w7jyg1@brd.superproxy.io:33335
+
+# Set database URL
+gh secret set DATABASE_URL
+# Paste when prompted:
+# postgresql://myfrog_me_owner:ErAVlQSW06Ih@ep-red-dew-a22obfoo.eu-central-1.aws.neon.tech/myfrog_me?sslmode=require
 ```
 
 #### Method C: From Variables
 
 ```bash
 # Set variables first
-DATABASE_URL="postgresql://myfrog_me_owner:ErAVlQSW06Ih@ep-red-dew-a22obfoo.eu-central-1.aws.neon.tech/myfrog_me?sslmode=require"
+START_PAGE="1"
+END_PAGE="1770"
+BASE_URL="https://turbo.az/autos"
+MAX_CONCURRENT="3"
+DELAY="1"
+AUTO_SAVE_INTERVAL="50"
 PROXY_URL="http://brd-customer-hl_cc079cd9-zone-residential_proxy1:ja1dl6w7jyg1@brd.superproxy.io:33335"
+DATABASE_URL="postgresql://myfrog_me_owner:ErAVlQSW06Ih@ep-red-dew-a22obfoo.eu-central-1.aws.neon.tech/myfrog_me?sslmode=require"
 
-# Set secrets
-echo "$DATABASE_URL" | gh secret set DATABASE_URL
+# Set all secrets
+echo "$START_PAGE" | gh secret set START_PAGE
+echo "$END_PAGE" | gh secret set END_PAGE
+echo "$BASE_URL" | gh secret set BASE_URL
+echo "$MAX_CONCURRENT" | gh secret set MAX_CONCURRENT
+echo "$DELAY" | gh secret set DELAY
+echo "$AUTO_SAVE_INTERVAL" | gh secret set AUTO_SAVE_INTERVAL
 echo "$PROXY_URL" | gh secret set PROXY_URL
+echo "$DATABASE_URL" | gh secret set DATABASE_URL
 ```
 
 ### Step 4: Verify Secrets
@@ -137,8 +160,14 @@ echo "$PROXY_URL" | gh secret set PROXY_URL
 gh secret list
 
 # Expected output:
-# DATABASE_URL  Updated 2025-12-31
-# PROXY_URL     Updated 2025-12-31
+# AUTO_SAVE_INTERVAL  Updated 2025-12-31
+# BASE_URL            Updated 2025-12-31
+# DATABASE_URL        Updated 2025-12-31
+# DELAY               Updated 2025-12-31
+# END_PAGE            Updated 2025-12-31
+# MAX_CONCURRENT      Updated 2025-12-31
+# PROXY_URL           Updated 2025-12-31
+# START_PAGE          Updated 2025-12-31
 ```
 
 ### Step 5: Push to GitHub
@@ -286,9 +315,15 @@ gh auth login
 # 3. Create GitHub repository (if doesn't exist)
 gh repo create turbo_az --public --source=. --remote=origin --push
 
-# 4. Set secrets from .env
-grep "^DATABASE_URL=" .env | cut -d '=' -f2- | gh secret set DATABASE_URL
+# 4. Set all secrets from .env
+grep "^START_PAGE=" .env | cut -d '=' -f2- | gh secret set START_PAGE
+grep "^END_PAGE=" .env | cut -d '=' -f2- | gh secret set END_PAGE
+grep "^BASE_URL=" .env | cut -d '=' -f2- | gh secret set BASE_URL
+grep "^MAX_CONCURRENT=" .env | cut -d '=' -f2- | gh secret set MAX_CONCURRENT
+grep "^DELAY=" .env | cut -d '=' -f2- | gh secret set DELAY
+grep "^AUTO_SAVE_INTERVAL=" .env | cut -d '=' -f2- | gh secret set AUTO_SAVE_INTERVAL
 grep "^PROXY_URL=" .env | cut -d '=' -f2- | gh secret set PROXY_URL
+grep "^DATABASE_URL=" .env | cut -d '=' -f2- | gh secret set DATABASE_URL
 
 # 5. Verify secrets
 gh secret list

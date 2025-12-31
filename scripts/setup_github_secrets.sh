@@ -1,117 +1,119 @@
 #!/bin/bash
 
-# Setup GitHub Secrets via CLI
-# This script sets up the required secrets for GitHub Actions
+# GitHub Secrets Setup Script for Turbo.az Scraper
+# This script reads environment variables from .env file and sets them as GitHub repository secrets
 
-set -e
+set -e  # Exit on error
 
-echo "=================================================="
-echo "GitHub Secrets Setup for Turbo.az Scraper"
-echo "=================================================="
+echo "=================================="
+echo "GitHub Secrets Setup"
+echo "=================================="
 echo ""
 
-# Check if gh CLI is installed
-if ! command -v gh &> /dev/null; then
-    echo "❌ GitHub CLI (gh) is not installed"
-    echo "Install it from: https://cli.github.com/"
-    echo "Or run: brew install gh"
+# Check if .env file exists
+if [ ! -f .env ]; then
+    echo "❌ Error: .env file not found"
+    echo "Please create .env file in the project root directory"
     exit 1
 fi
 
-echo "✅ GitHub CLI is installed"
-echo ""
+# Check if GitHub CLI is installed
+if ! command -v gh &> /dev/null; then
+    echo "❌ Error: GitHub CLI (gh) is not installed"
+    echo ""
+    echo "Install GitHub CLI:"
+    echo "  macOS: brew install gh"
+    echo "  Linux: https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+    echo "  Windows: https://github.com/cli/cli/releases"
+    exit 1
+fi
 
 # Check if authenticated
 if ! gh auth status &> /dev/null; then
-    echo "⚠️  You're not authenticated with GitHub CLI"
-    echo "Running: gh auth login"
+    echo "❌ Error: Not authenticated with GitHub"
     echo ""
-    gh auth login
+    echo "Please authenticate first:"
+    echo "  gh auth login -h github.com --web"
+    exit 1
 fi
 
-echo "✅ Authenticated with GitHub"
+echo "✓ Found .env file"
+echo "✓ GitHub CLI is installed"
+echo "✓ Authenticated with GitHub"
 echo ""
 
-# Get repository info
+# Extract repository name
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "")
-
 if [ -z "$REPO" ]; then
-    echo "⚠️  Not in a GitHub repository directory"
-    echo "Please provide your repository (e.g., username/turbo_az):"
-    read -r REPO
+    echo "❌ Error: Not in a git repository or no remote configured"
+    exit 1
 fi
 
-echo "📦 Repository: $REPO"
+echo "Repository: $REPO"
 echo ""
 
-# Read DATABASE_URL from .env if exists
-if [ -f .env ]; then
-    DATABASE_URL=$(grep "^DATABASE_URL=" .env | cut -d '=' -f2-)
-    PROXY_URL=$(grep "^PROXY_URL=" .env | cut -d '=' -f2-)
-else
-    echo "⚠️  .env file not found"
-fi
+# Function to set a secret from .env file
+set_secret_from_env() {
+    local key=$1
+    local value=$(grep "^${key}=" .env | cut -d '=' -f2-)
 
-# Set DATABASE_URL
-echo "=================================================="
-echo "Setting DATABASE_URL secret"
-echo "=================================================="
+    if [ -z "$value" ]; then
+        echo "⚠️  Warning: $key not found in .env file, skipping"
+        return 1
+    fi
+
+    echo "Setting secret: $key"
+    echo -n "$value" | gh secret set "$key"
+
+    if [ $? -eq 0 ]; then
+        echo "✓ Successfully set $key"
+        return 0
+    else
+        echo "❌ Failed to set $key"
+        return 1
+    fi
+}
+
+echo "Setting GitHub repository secrets..."
 echo ""
 
-if [ -n "$DATABASE_URL" ]; then
-    echo "Found DATABASE_URL in .env file"
-    echo "Using: ${DATABASE_URL:0:50}..."
-else
-    echo "Enter DATABASE_URL:"
-    echo "(PostgreSQL connection string)"
-    read -r DATABASE_URL
-fi
-
-echo "$DATABASE_URL" | gh secret set DATABASE_URL --repo "$REPO"
-echo "✅ DATABASE_URL secret set"
+# Set scraping configuration secrets
+set_secret_from_env "START_PAGE"
 echo ""
 
-# Set PROXY_URL
-echo "=================================================="
-echo "Setting PROXY_URL secret"
-echo "=================================================="
+set_secret_from_env "END_PAGE"
 echo ""
 
-if [ -n "$PROXY_URL" ]; then
-    echo "Found PROXY_URL in .env file"
-    echo "Using: ${PROXY_URL:0:50}..."
-else
-    echo "Enter PROXY_URL:"
-    echo "(BrightData proxy URL)"
-    read -r PROXY_URL
-fi
-
-echo "$PROXY_URL" | gh secret set PROXY_URL --repo "$REPO"
-echo "✅ PROXY_URL secret set"
+set_secret_from_env "BASE_URL"
 echo ""
 
-# Verify secrets
-echo "=================================================="
-echo "Verifying secrets"
-echo "=================================================="
+set_secret_from_env "MAX_CONCURRENT"
 echo ""
 
-gh secret list --repo "$REPO"
-
+set_secret_from_env "DELAY"
 echo ""
-echo "=================================================="
-echo "✅ All secrets configured successfully!"
-echo "=================================================="
+
+set_secret_from_env "AUTO_SAVE_INTERVAL"
+echo ""
+
+# Set proxy secret
+set_secret_from_env "PROXY_URL"
+echo ""
+
+# Set database secret
+set_secret_from_env "DATABASE_URL"
+echo ""
+
+echo "=================================="
+echo "Secrets Setup Complete"
+echo "=================================="
+echo ""
+echo "Verify secrets were set:"
+echo "  gh secret list"
 echo ""
 echo "Next steps:"
-echo "1. Push your code to GitHub:"
-echo "   git add ."
-echo "   git commit -m 'Add scraper with GitHub Actions'"
-echo "   git push origin master"
+echo "1. Push code to GitHub: git push origin master"
+echo "2. Verify workflow: gh workflow view scraper.yml"
+echo "3. Trigger manual run: gh workflow run scraper.yml"
+echo "4. Check run status: gh run list --workflow=scraper.yml"
 echo ""
-echo "2. Go to GitHub Actions tab to see workflows"
-echo ""
-echo "3. Trigger a manual run to test:"
-echo "   gh workflow run scraper.yml"
-echo ""
-echo "=================================================="

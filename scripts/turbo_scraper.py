@@ -865,19 +865,69 @@ class TurboAzScraper:
 
             logger.info(f"Processed {len(batch_data)} listings ({errors} errors)")
 
-            # Batch insert
+            # Batch insert with URL conflict handling
             logger.info("Inserting into PostgreSQL...")
             batch_size = 500
             total_inserted = 0
+            total_skipped = 0
 
             for i in range(0, len(batch_data), batch_size):
                 batch = batch_data[i:i + batch_size]
-                execute_batch(cursor, insert_sql, batch, page_size=100)
-                conn.commit()
-                total_inserted += len(batch)
-                logger.info(f"  Inserted {total_inserted}/{len(batch_data)} listings...")
+
+                try:
+                    execute_batch(cursor, insert_sql, batch, page_size=100)
+                    conn.commit()
+                    total_inserted += len(batch)
+                    logger.info(f"  Inserted {total_inserted}/{len(batch_data)} listings...")
+
+                except psycopg2.errors.UniqueViolation as e:
+                    conn.rollback()
+
+                    if 'unique_listing_url' in str(e):
+                        logger.warning(f"⚠️ URL duplicate detected in batch, falling back to individual inserts")
+
+                        # Fallback: Insert one by one to identify and skip duplicates
+                        for single_data in batch:
+                            try:
+                                cursor.execute(insert_sql, single_data)
+                                conn.commit()
+                                total_inserted += 1
+                            except psycopg2.errors.UniqueViolation as single_error:
+                                conn.rollback()
+                                if 'unique_listing_url' in str(single_error):
+                                    total_skipped += 1
+                                    logger.warning(f"   Skipped duplicate URL for listing_id: {single_data[0]}")
+                                else:
+                                    # Different uniqueness error, re-raise
+                                    raise
+                            except Exception as single_error:
+                                conn.rollback()
+                                logger.error(f"   Error inserting listing {single_data[0]}: {single_error}")
+                                total_skipped += 1
+
+                        logger.info(f"  Batch complete: {total_inserted - (i//batch_size * batch_size)} inserted, {total_skipped} skipped")
+
+                    else:
+                        # Different UniqueViolation (not URL), re-raise
+                        raise
+
+                except Exception as batch_error:
+                    conn.rollback()
+                    logger.error(f"Batch insert error: {batch_error}")
+                    # Try individual inserts as fallback
+                    for single_data in batch:
+                        try:
+                            cursor.execute(insert_sql, single_data)
+                            conn.commit()
+                            total_inserted += 1
+                        except Exception as e:
+                            conn.rollback()
+                            total_skipped += 1
+                            logger.error(f"   Failed to insert listing {single_data[0]}: {e}")
 
             logger.info(f"✅ Successfully saved {total_inserted} listings to PostgreSQL!")
+            if total_skipped > 0:
+                logger.info(f"⚠️ Skipped {total_skipped} duplicate listings")
 
             # Get stats
             cursor.execute("SELECT COUNT(*) FROM scraping.turbo_az;")

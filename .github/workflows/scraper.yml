@@ -6,16 +6,14 @@ on:
     - cron: '0 */6 * * *'
 
   workflow_dispatch:
-    # Allow manual trigger
+    # Allow manual trigger with optional page range override
     inputs:
       start_page:
-        description: 'Start page number'
+        description: 'Start page number (optional override)'
         required: false
-        default: '1'
       end_page:
-        description: 'End page number'
+        description: 'End page number (optional override)'
         required: false
-        default: '2'
 
 jobs:
   scrape:
@@ -40,12 +38,12 @@ jobs:
         run: |
           cat > .env << EOF
           # Scraping Configuration
-          START_PAGE=${{ github.event.inputs.start_page || '1' }}
-          END_PAGE=${{ github.event.inputs.end_page || '2' }}
-          BASE_URL=https://turbo.az/autos
-          MAX_CONCURRENT=3
-          DELAY=1
-          AUTO_SAVE_INTERVAL=50
+          START_PAGE=${{ github.event.inputs.start_page || secrets.START_PAGE }}
+          END_PAGE=${{ github.event.inputs.end_page || secrets.END_PAGE }}
+          BASE_URL=${{ secrets.BASE_URL }}
+          MAX_CONCURRENT=${{ secrets.MAX_CONCURRENT }}
+          DELAY=${{ secrets.DELAY }}
+          AUTO_SAVE_INTERVAL=${{ secrets.AUTO_SAVE_INTERVAL }}
 
           # BrightData Proxy Configuration
           PROXY_URL=${{ secrets.PROXY_URL }}
