@@ -133,6 +133,11 @@ class CarListing:
     # Metadata
     scraped_at: str = ""
 
+    # Normalized Fields (for database efficiency)
+    price_clean: Optional[int] = None
+    mileage_clean: Optional[int] = None
+    engine_power_clean: Optional[int] = None
+
 
 class CheckpointManager:
     """Manages scraping progress and crash recovery"""
@@ -410,6 +415,30 @@ class TurboAzScraper:
             return ""
         return ' '.join(text.strip().split())
 
+    def normalize_price(self, price_str: str) -> Optional[int]:
+        """Convert price string to integer (remove spaces, symbols)"""
+        if not price_str:
+            return None
+        # Remove spaces, ₼ symbol, AZN text, commas
+        clean = re.sub(r'[^\d]', '', str(price_str))
+        return int(clean) if clean else None
+
+    def normalize_mileage(self, mileage_str: str) -> Optional[int]:
+        """Convert mileage to integer (remove 'km', spaces)"""
+        if not mileage_str:
+            return None
+        # Remove km, spaces, commas
+        clean = re.sub(r'[^\d]', '', str(mileage_str))
+        return int(clean) if clean else None
+
+    def normalize_engine_power(self, power_str: str) -> Optional[int]:
+        """Extract numeric HP value"""
+        if not power_str:
+            return None
+        # Extract first number
+        match = re.search(r'\d+', str(power_str))
+        return int(match.group()) if match else None
+
     def extract_csrf_token(self, html: str) -> Optional[str]:
         """Extract CSRF token from HTML for AJAX requests"""
         soup = BeautifulSoup(html, 'html.parser')
@@ -500,6 +529,7 @@ class TurboAzScraper:
         price_elem = soup.find('div', class_='product-price__i--bold')
         if price_elem:
             listing.price_azn = self.clean_text(price_elem.get_text())
+            listing.price_clean = self.normalize_price(listing.price_azn)
 
         # Extract properties
         properties = soup.find_all('div', class_='product-properties__i')
@@ -523,12 +553,14 @@ class TurboAzScraper:
                 listing.year = value
             elif 'Yürüş' in label or 'Mileage' in label:
                 listing.mileage = value
+                listing.mileage_clean = self.normalize_mileage(value)
             elif 'Mühərrik' in label or 'Engine' in label:
                 engine_parts = value.split('/')
                 if len(engine_parts) >= 1:
                     listing.engine_volume = self.clean_text(engine_parts[0])
                 if len(engine_parts) >= 2:
                     listing.engine_power = self.clean_text(engine_parts[1])
+                    listing.engine_power_clean = self.normalize_engine_power(listing.engine_power)
                 if len(engine_parts) >= 3:
                     listing.fuel_type = self.clean_text(engine_parts[2])
             elif 'Sürətlər qutusu' in label or 'Transmission' in label:
@@ -851,7 +883,8 @@ class TurboAzScraper:
                 condition, market, is_new, city, seller_name, seller_phone,
                 description, extras, views, updated_date, posted_date,
                 is_vip, is_featured, is_salon, has_credit, has_barter, has_vin,
-                image_urls, scraped_at
+                image_urls, scraped_at,
+                price_clean, mileage_clean, engine_power_clean
             ) VALUES (
                 %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s,
@@ -859,7 +892,8 @@ class TurboAzScraper:
                 %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s,
-                %s, %s
+                %s, %s,
+                %s, %s, %s
             )
             ON CONFLICT (listing_id) DO UPDATE SET
                 listing_url = EXCLUDED.listing_url,
@@ -895,7 +929,10 @@ class TurboAzScraper:
                 has_barter = EXCLUDED.has_barter,
                 has_vin = EXCLUDED.has_vin,
                 image_urls = EXCLUDED.image_urls,
-                scraped_at = EXCLUDED.scraped_at;
+                scraped_at = EXCLUDED.scraped_at,
+                price_clean = EXCLUDED.price_clean,
+                mileage_clean = EXCLUDED.mileage_clean,
+                engine_power_clean = EXCLUDED.engine_power_clean;
             """
 
             # Prepare batch data
@@ -947,6 +984,10 @@ class TurboAzScraper:
 
                         listing.image_urls if listing.image_urls else None,
                         parse_timestamp(listing.scraped_at),
+
+                        listing.price_clean,
+                        listing.mileage_clean,
+                        listing.engine_power_clean,
                     )
                     batch_data.append(data_tuple)
 
