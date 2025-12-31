@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json()
+    // Check if user is authenticated and is an admin
+    const session = await auth()
+
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json(
+        { error: "Unauthorized. Only admins can create users." },
+        { status: 401 }
+      )
+    }
+
+    const { name, email, password, role } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json(
@@ -28,12 +39,13 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await hash(password, 10)
 
-    // Create user
+    // Create user with specified role or default to 'user'
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        role: role || "user",
       },
     })
 

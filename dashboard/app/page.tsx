@@ -18,10 +18,7 @@ export default function Home() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/login">
-                <Button size="lg">Get Started</Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="outline" size="lg">Sign Up</Button>
+                <Button size="lg">Sign In</Button>
               </Link>
             </div>
           </div>
@@ -155,11 +152,11 @@ export default function Home() {
             Ready to get started?
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Join today and start making data-driven decisions for your car business
+            Sign in to access powerful analytics and AI-powered insights for your car business
           </p>
           <div className="mt-10">
-            <Link href="/register">
-              <Button size="lg">Create Free Account</Button>
+            <Link href="/login">
+              <Button size="lg">Sign In to Dashboard</Button>
             </Link>
           </div>
         </div>
