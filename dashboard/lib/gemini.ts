@@ -64,8 +64,10 @@ EXAMPLE QUERIES:
 - "Top 5 makes" -> SELECT make, COUNT(*) as count FROM scraping.turbo_az GROUP BY make ORDER BY count DESC LIMIT 5
 - "Average year by make" -> SELECT make, AVG(year)::int as avg_year FROM scraping.turbo_az WHERE year IS NOT NULL GROUP BY make ORDER BY avg_year DESC LIMIT 10
 - "Listings by city" -> SELECT city, COUNT(*) as count FROM scraping.turbo_az WHERE city IS NOT NULL GROUP BY city ORDER BY count DESC
-- "Top 10 most expensive cars" -> SELECT title, make, model, year, price_azn FROM scraping.turbo_az WHERE price_azn IS NOT NULL ORDER BY CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL) DESC LIMIT 10
+- "Top 10 most expensive cars" -> SELECT make, model, CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL)::int as price, year FROM scraping.turbo_az WHERE price_azn IS NOT NULL ORDER BY price DESC LIMIT 10
 - "Average price by make" -> SELECT make, AVG(CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL))::int as avg_price FROM scraping.turbo_az WHERE price_azn IS NOT NULL GROUP BY make ORDER BY avg_price DESC LIMIT 10
+- "Cheapest cars" -> SELECT make, model, CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL)::int as price, year FROM scraping.turbo_az WHERE price_azn IS NOT NULL ORDER BY price ASC LIMIT 10
+- "Price range by year" -> SELECT year, AVG(CAST(REGEXP_REPLACE(price_azn, '[^0-9]', '', 'g') AS DECIMAL))::int as avg_price FROM scraping.turbo_az WHERE price_azn IS NOT NULL AND year IS NOT NULL GROUP BY year ORDER BY year DESC LIMIT 15
 
 Your task: Convert natural language questions into SQL queries that follow these rules.
 Return ONLY the SQL query, nothing else. Do not include markdown formatting or explanations.

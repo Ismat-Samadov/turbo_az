@@ -71,6 +71,24 @@ export default function AIQueryPage() {
   const canShowChart = result?.result?.data && result.result.data.length > 0
   const hasNumericData = canShowChart && Object.values(result.result.data[0]).some((v: any) => typeof v === "number")
 
+  // Find the best columns for chart axes
+  const getChartColumns = () => {
+    if (!canShowChart) return { labelKey: '', valueKey: '' }
+
+    const firstRow = result.result.data[0]
+    const keys = Object.keys(firstRow)
+
+    // Find first numeric column for Y-axis (bar values)
+    const valueKey = keys.find(key => typeof firstRow[key] === 'number') || keys[keys.length - 1]
+
+    // Use first column for X-axis (labels), but prefer short text fields
+    const labelKey = keys[0]
+
+    return { labelKey, valueKey }
+  }
+
+  const { labelKey, valueKey } = getChartColumns()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
       {/* Header */}
@@ -198,7 +216,7 @@ export default function AIQueryPage() {
                             <BarChart data={result.result.data.slice(0, 15)}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                               <XAxis
-                                dataKey={Object.keys(result.result.data[0])[0]}
+                                dataKey={labelKey}
                                 tick={{ fontSize: 11 }}
                                 angle={-45}
                                 textAnchor="end"
@@ -209,7 +227,7 @@ export default function AIQueryPage() {
                                 contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
                               />
                               <Bar
-                                dataKey={Object.keys(result.result.data[0])[1]}
+                                dataKey={valueKey}
                                 fill="url(#colorGradient)"
                                 radius={[8, 8, 0, 0]}
                               />
