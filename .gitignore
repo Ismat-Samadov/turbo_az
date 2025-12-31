@@ -22,6 +22,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Exception: Allow dashboard lib directory (Next.js source code)
+!dashboard/lib/
 parts/
 sdist/
 var/
@@ -29,7 +31,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
+dashboard/node_modules
 # Virtual environments
 venv/
 ENV/
