@@ -21,6 +21,8 @@ import os
 import signal
 import sys
 from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import execute_batch
 
 # Configure logging
 logging.basicConfig(
@@ -700,6 +702,202 @@ class TurboAzScraper:
 
         logger.info(f"Saved {len(self.scraped_listings)} listings to {filename}")
 
+    def save_to_postgres(self):
+        """Save scraped data to PostgreSQL database"""
+        if not self.scraped_listings:
+            logger.warning("No listings to save to PostgreSQL")
+            return
+
+        DATABASE_URL = os.getenv('DATABASE_URL')
+        if not DATABASE_URL:
+            logger.error("DATABASE_URL not found in environment variables")
+            logger.error("Skipping PostgreSQL save")
+            return
+
+        logger.info("="*60)
+        logger.info("SAVING TO POSTGRESQL")
+        logger.info("="*60)
+
+        try:
+            # Connect to database
+            logger.info("Connecting to PostgreSQL...")
+            conn = psycopg2.connect(DATABASE_URL)
+            cursor = conn.cursor()
+            logger.info("Connected successfully!")
+
+            # Helper functions for data conversion
+            def parse_phone_numbers(phone_str):
+                """Convert phone string to JSON array"""
+                if not phone_str or phone_str == '':
+                    return None
+                phones = [p.strip() for p in str(phone_str).split('|') if p.strip()]
+                return json.dumps(phones) if phones else None
+
+            def parse_integer(val):
+                """Safely parse integer values"""
+                if not val or val == '':
+                    return None
+                try:
+                    return int(float(val))
+                except:
+                    return None
+
+            def parse_timestamp(val):
+                """Parse timestamp string"""
+                if not val or val == '':
+                    return None
+                try:
+                    return datetime.fromisoformat(val.replace('Z', '+00:00'))
+                except:
+                    return None
+
+            # Prepare SQL
+            insert_sql = """
+            INSERT INTO scraping.turbo_az (
+                listing_id, listing_url, title, price_azn,
+                make, model, year, mileage, engine_volume, engine_power, fuel_type,
+                transmission, drivetrain, body_type, color, seats_count,
+                condition, market, is_new, city, seller_name, seller_phone,
+                description, extras, views, updated_date, posted_date,
+                is_vip, is_featured, is_salon, has_credit, has_barter, has_vin,
+                image_urls, scraped_at
+            ) VALUES (
+                %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s,
+                %s, %s
+            )
+            ON CONFLICT (listing_id) DO UPDATE SET
+                listing_url = EXCLUDED.listing_url,
+                title = EXCLUDED.title,
+                price_azn = EXCLUDED.price_azn,
+                make = EXCLUDED.make,
+                model = EXCLUDED.model,
+                year = EXCLUDED.year,
+                mileage = EXCLUDED.mileage,
+                engine_volume = EXCLUDED.engine_volume,
+                engine_power = EXCLUDED.engine_power,
+                fuel_type = EXCLUDED.fuel_type,
+                transmission = EXCLUDED.transmission,
+                drivetrain = EXCLUDED.drivetrain,
+                body_type = EXCLUDED.body_type,
+                color = EXCLUDED.color,
+                seats_count = EXCLUDED.seats_count,
+                condition = EXCLUDED.condition,
+                market = EXCLUDED.market,
+                is_new = EXCLUDED.is_new,
+                city = EXCLUDED.city,
+                seller_name = EXCLUDED.seller_name,
+                seller_phone = EXCLUDED.seller_phone,
+                description = EXCLUDED.description,
+                extras = EXCLUDED.extras,
+                views = EXCLUDED.views,
+                updated_date = EXCLUDED.updated_date,
+                posted_date = EXCLUDED.posted_date,
+                is_vip = EXCLUDED.is_vip,
+                is_featured = EXCLUDED.is_featured,
+                is_salon = EXCLUDED.is_salon,
+                has_credit = EXCLUDED.has_credit,
+                has_barter = EXCLUDED.has_barter,
+                has_vin = EXCLUDED.has_vin,
+                image_urls = EXCLUDED.image_urls,
+                scraped_at = EXCLUDED.scraped_at;
+            """
+
+            # Prepare batch data
+            logger.info(f"Processing {len(self.scraped_listings)} listings...")
+            batch_data = []
+            errors = 0
+
+            for listing in self.scraped_listings:
+                try:
+                    data_tuple = (
+                        parse_integer(listing.listing_id),
+                        listing.listing_url if listing.listing_url else None,
+                        listing.title if listing.title else None,
+                        listing.price_azn if listing.price_azn else None,
+
+                        listing.make if listing.make else None,
+                        listing.model if listing.model else None,
+                        parse_integer(listing.year),
+                        listing.mileage if listing.mileage else None,
+                        listing.engine_volume if listing.engine_volume else None,
+                        listing.engine_power if listing.engine_power else None,
+                        listing.fuel_type if listing.fuel_type else None,
+
+                        listing.transmission if listing.transmission else None,
+                        listing.drivetrain if listing.drivetrain else None,
+                        listing.body_type if listing.body_type else None,
+                        listing.color if listing.color else None,
+                        parse_integer(listing.seats_count),
+
+                        listing.condition if listing.condition else None,
+                        listing.market if listing.market else None,
+                        listing.is_new if listing.is_new else None,
+                        listing.city if listing.city else None,
+                        listing.seller_name if listing.seller_name else None,
+                        parse_phone_numbers(listing.seller_phone),
+
+                        listing.description if listing.description else None,
+                        listing.extras if listing.extras else None,
+                        parse_integer(listing.views),
+                        listing.updated_date if listing.updated_date else None,
+                        listing.posted_date if listing.posted_date else None,
+
+                        listing.is_vip,
+                        listing.is_featured,
+                        listing.is_salon,
+                        listing.has_credit,
+                        listing.has_barter,
+                        listing.has_vin,
+
+                        listing.image_urls if listing.image_urls else None,
+                        parse_timestamp(listing.scraped_at),
+                    )
+                    batch_data.append(data_tuple)
+
+                except Exception as e:
+                    errors += 1
+                    logger.error(f"Error processing listing {listing.listing_id}: {e}")
+
+            logger.info(f"Processed {len(batch_data)} listings ({errors} errors)")
+
+            # Batch insert
+            logger.info("Inserting into PostgreSQL...")
+            batch_size = 500
+            total_inserted = 0
+
+            for i in range(0, len(batch_data), batch_size):
+                batch = batch_data[i:i + batch_size]
+                execute_batch(cursor, insert_sql, batch, page_size=100)
+                conn.commit()
+                total_inserted += len(batch)
+                logger.info(f"  Inserted {total_inserted}/{len(batch_data)} listings...")
+
+            logger.info(f"✅ Successfully saved {total_inserted} listings to PostgreSQL!")
+
+            # Get stats
+            cursor.execute("SELECT COUNT(*) FROM scraping.turbo_az;")
+            total_in_db = cursor.fetchone()[0]
+            logger.info(f"📊 Total listings in database: {total_in_db:,}")
+
+            cursor.close()
+            conn.close()
+
+            logger.info("="*60)
+
+        except psycopg2.Error as e:
+            logger.error(f"PostgreSQL error: {e}")
+            logger.error("Data was saved to CSV but not to database")
+            if 'conn' in locals():
+                conn.rollback()
+        except Exception as e:
+            logger.error(f"Error saving to PostgreSQL: {e}")
+            logger.error("Data was saved to CSV but not to database")
+
 
 async def main():
     """Main execution function"""
@@ -755,9 +953,8 @@ async def main():
             )
 
             if listings:
-                scraper.save_to_csv()
-                scraper.save_to_excel()
-                scraper.save_to_json()
+                # Save directly to PostgreSQL (no CSV backup)
+                scraper.save_to_postgres()
 
         elapsed_time = time.time() - start_time
         logger.info("="*60)

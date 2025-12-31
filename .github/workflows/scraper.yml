@@ -1,0 +1,76 @@
+name: Turbo.az Scraper
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+
+  workflow_dispatch:
+    # Allow manual trigger
+    inputs:
+      start_page:
+        description: 'Start page number'
+        required: false
+        default: '1'
+      end_page:
+        description: 'End page number'
+        required: false
+        default: '2'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          # Scraping Configuration
+          START_PAGE=${{ github.event.inputs.start_page || '1' }}
+          END_PAGE=${{ github.event.inputs.end_page || '2' }}
+          BASE_URL=https://turbo.az/autos
+          MAX_CONCURRENT=3
+          DELAY=1
+          AUTO_SAVE_INTERVAL=50
+
+          # BrightData Proxy Configuration
+          PROXY_URL=${{ secrets.PROXY_URL }}
+
+          # PostgreSQL Database Configuration
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          EOF
+
+      - name: Run scraper
+        id: scrape
+        run: |
+          cd scripts
+          python turbo_scraper.py
+        continue-on-error: true
+
+      - name: Check scraper status
+        if: steps.scrape.outcome == 'failure'
+        run: |
+          echo "::warning::Scraper failed but workflow continues"
+          cat scripts/scraper.log || echo "No log file found"
+
+      - name: Upload scraper log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-log-${{ github.run_number }}
+          path: scripts/scraper.log
+          retention-days: 7

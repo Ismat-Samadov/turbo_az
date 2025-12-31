@@ -11,8 +11,9 @@ print("="*80)
 
 data_dir = "../data"
 
-# Find all CSV files (exclude already combined files)
-csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv')]
+# Find all CSV files (only turbo_az_listings files, exclude non-listing files)
+csv_files = [f for f in os.listdir(data_dir)
+             if f.endswith('.csv') and f.startswith('turbo_az_listings_')]
 csv_files = sorted(csv_files)
 
 print(f"\n📁 Found {len(csv_files)} CSV files to process\n")
@@ -60,37 +61,38 @@ output_csv = os.path.join(data_dir, f'turbo_az_listings_combined_clean_{timestam
 output_xlsx = os.path.join(data_dir, f'turbo_az_listings_combined_clean_{timestamp}.xlsx')
 output_json = os.path.join(data_dir, f'turbo_az_listings_combined_clean_{timestamp}.json')
 
-# Save combined file as CSV
+# Save combined file as CSV only
 print(f"\n💾 Saving combined data...")
 print(f"   CSV: {os.path.basename(output_csv)}")
 combined_df.to_csv(output_csv, index=False, encoding='utf-8-sig')
 csv_size = os.path.getsize(output_csv) / (1024*1024)
 print(f"   ✓ Saved ({csv_size:.2f} MB)")
 
-# Save as Excel
-print(f"   XLSX: {os.path.basename(output_xlsx)}")
-with pd.ExcelWriter(output_xlsx, engine='openpyxl') as writer:
-    combined_df.to_excel(writer, sheet_name='Listings', index=False)
-
-    # Auto-adjust column widths
-    from openpyxl.utils import get_column_letter
-    worksheet = writer.sheets['Listings']
-    for idx, col in enumerate(combined_df.columns):
-        max_length = max(
-            combined_df[col].astype(str).apply(len).max(),
-            len(col)
-        )
-        col_letter = get_column_letter(idx + 1)
-        worksheet.column_dimensions[col_letter].width = min(max_length + 2, 50)
-
-xlsx_size = os.path.getsize(output_xlsx) / (1024*1024)
-print(f"   ✓ Saved ({xlsx_size:.2f} MB)")
-
-# Save as JSON
-print(f"   JSON: {os.path.basename(output_json)}")
-combined_df.to_json(output_json, orient='records', indent=2, force_ascii=False)
-json_size = os.path.getsize(output_json) / (1024*1024)
-print(f"   ✓ Saved ({json_size:.2f} MB)")
+# Excel and JSON formats disabled to save space and processing time
+# # Save as Excel
+# print(f"   XLSX: {os.path.basename(output_xlsx)}")
+# with pd.ExcelWriter(output_xlsx, engine='openpyxl') as writer:
+#     combined_df.to_excel(writer, sheet_name='Listings', index=False)
+#
+#     # Auto-adjust column widths
+#     from openpyxl.utils import get_column_letter
+#     worksheet = writer.sheets['Listings']
+#     for idx, col in enumerate(combined_df.columns):
+#         max_length = max(
+#             combined_df[col].astype(str).apply(len).max(),
+#             len(col)
+#         )
+#         col_letter = get_column_letter(idx + 1)
+#         worksheet.column_dimensions[col_letter].width = min(max_length + 2, 50)
+#
+# xlsx_size = os.path.getsize(output_xlsx) / (1024*1024)
+# print(f"   ✓ Saved ({xlsx_size:.2f} MB)")
+#
+# # Save as JSON
+# print(f"   JSON: {os.path.basename(output_json)}")
+# combined_df.to_json(output_json, orient='records', indent=2, force_ascii=False)
+# json_size = os.path.getsize(output_json) / (1024*1024)
+# print(f"   ✓ Saved ({json_size:.2f} MB)")
 
 # Statistics
 print("\n" + "="*80)
@@ -133,8 +135,6 @@ if 'price_azn' in combined_df.columns:
 print("\n" + "="*80)
 print("✅ COMBINATION COMPLETE!")
 print("="*80)
-print(f"\n📁 Output files saved in: {data_dir}/")
+print(f"\n📁 Output file saved in: {data_dir}/")
 print(f"   • {os.path.basename(output_csv)}")
-print(f"   • {os.path.basename(output_xlsx)}")
-print(f"   • {os.path.basename(output_json)}")
 print("\n" + "="*80)

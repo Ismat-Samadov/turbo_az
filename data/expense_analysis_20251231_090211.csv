@@ -1,0 +1,24 @@
+﻿Metric,Value
+Balance Before (USD),1.06
+Balance After (USD),0.97
+Total Spent (USD),0.09000000000000008
+Bandwidth Used (MB),11.5
+Total Requests,447.0
+Pages Scraped,10.0
+Listings Scraped,216.0
+Time Taken (seconds),1449.1
+Avg Time per Listing (s),6.71
+Cost per Request (USD),0.00020134228187919482
+Cost per 1K Requests (USD),0.2013422818791948
+Cost per MB (USD),0.007826086956521747
+Cost per Listing (USD),0.000416666666666667
+Cost per Page (USD),0.009000000000000008
+Listings per Page,21.6
+Requests per Listing,2.0694444444444446
+Bandwidth per Listing (MB),0.05324074074074074
+Bandwidth per Request (MB),0.025727069351230425
+Estimated Full Scrape Listings,38232.0
+Estimated Full Scrape Requests,78234.0
+Estimated Full Scrape Bandwidth (MB),2012.731543624161
+Estimated Full Scrape Cost (USD),15.751812080536927
+Estimated Full Scrape Time (hours),71.2602
