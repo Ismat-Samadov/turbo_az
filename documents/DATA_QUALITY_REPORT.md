@@ -123,8 +123,8 @@ listing.mileage = normalize_mileage("250 000 km")  # → 250000
 
 ### Immediate Actions
 1. ✅ **Normalize existing data** (COMPLETED)
-2. ⏳ **Update scraper to save clean data**
-3. ⏳ **Improve phone extraction reliability**
+2. ✅ **Update scraper to save clean data** (COMPLETED)
+3. ⏳ **Improve phone extraction reliability** (Requires proxy configuration)
 4. ⏳ **Fix posted_date parsing**
 
 ### Database Views
@@ -171,14 +171,55 @@ Track these metrics:
 3. `scripts/test_phone_extraction.py` - Phone debugging script
 4. `documents/DATA_QUALITY_REPORT.md` - This report
 
+## Scraper Updates Implemented
+
+### Normalization Functions Added
+Three new methods added to TurboAzScraper class:
+
+```python
+def normalize_price(self, price_str: str) -> Optional[int]:
+    """Convert price string to integer (remove spaces, symbols)"""
+    clean = re.sub(r'[^\d]', '', str(price_str))
+    return int(clean) if clean else None
+
+def normalize_mileage(self, mileage_str: str) -> Optional[int]:
+    """Convert mileage to integer (remove 'km', spaces)"""
+    clean = re.sub(r'[^\d]', '', str(mileage_str))
+    return int(clean) if clean else None
+
+def normalize_engine_power(self, power_str: str) -> Optional[int]:
+    """Extract numeric HP value"""
+    match = re.search(r'\d+', str(power_str))
+    return int(match.group()) if match else None
+```
+
+### CarListing Dataclass Extended
+Added three normalized fields:
+- `price_clean: Optional[int]`
+- `mileage_clean: Optional[int]`
+- `engine_power_clean: Optional[int]`
+
+### Database Integration
+- Updated INSERT statement to include normalized columns
+- Automatic normalization during parsing in `parse_listing_page()`
+- All future scrapes will save both raw and clean data
+
+### Testing
+Created `test_normalization.py` with comprehensive tests:
+- ✅ Price normalization: "24 500 ₼" → 24500
+- ✅ Mileage normalization: "250 000 km" → 250000
+- ✅ Engine power normalization: "150 a.g." → 150
+- ✅ All edge cases handled (empty strings, None values)
+
 ## Next Steps
 
-1. Update `turbo_scraper.py` with normalization functions
-2. Test updated scraper with proxy on 1-2 pages
-3. Monitor phone extraction success rate
-4. Deploy to GitHub Actions
-5. Set up data quality monitoring dashboard
+1. ✅ ~~Update `turbo_scraper.py` with normalization functions~~ (COMPLETED)
+2. Configure PROXY_URL in .env for phone extraction
+3. Monitor phone extraction success rate in production
+4. Fix posted_date parsing (currently 100% NULL)
+5. Deploy updated scraper to GitHub Actions
+6. Set up data quality monitoring dashboard
 
 ---
 
-**Status**: Analysis Complete | Normalization Complete | Scraper Updates In Progress
+**Status**: Analysis Complete | Normalization Complete | Scraper Updates Complete
