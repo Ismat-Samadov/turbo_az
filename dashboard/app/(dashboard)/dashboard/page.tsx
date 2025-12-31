@@ -14,17 +14,23 @@ export default function DashboardPage() {
   const [result, setResult] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [stats, setStats] = useState<any>(null)
+  const [trends, setTrends] = useState<any>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Fetch dashboard statistics
   async function fetchStats() {
     try {
       setIsRefreshing(true)
-      const res = await fetch("/api/stats", { cache: 'no-store' })
-      const data = await res.json()
-      setStats(data)
+      const [statsRes, trendsRes] = await Promise.all([
+        fetch("/api/stats", { cache: 'no-store' }),
+        fetch("/api/trends", { cache: 'no-store' }),
+      ])
+      const statsData = await statsRes.json()
+      const trendsData = await trendsRes.json()
+      setStats(statsData)
+      setTrends(trendsData)
     } catch (error) {
-      console.error("Error fetching stats:", error)
+      console.error("Error fetching data:", error)
     } finally {
       setIsRefreshing(false)
     }
@@ -127,6 +133,80 @@ export default function DashboardPage() {
       </header>
 
       <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+        {/* Executive Summary */}
+        {trends?.executiveSummary && (
+          <Card className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white border-0 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+                <TrendingUp className="h-8 w-8" />
+                Executive Market Summary
+              </CardTitle>
+              <CardDescription className="text-blue-100 text-base">
+                Real-time analysis of Azerbaijan automotive market dynamics
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
+                  <p className="text-sm text-blue-100 mb-1">Current Median Price</p>
+                  <p className="text-3xl font-bold">{trends.executiveSummary.current_median_price?.toLocaleString()} AZN</p>
+                  <p className="text-xs text-blue-200 mt-2">
+                    <span className={trends.executiveSummary.mom_change_percent >= 0 ? 'text-green-300' : 'text-red-300'}>
+                      {trends.executiveSummary.mom_change_percent >= 0 ? '↑' : '↓'} {Math.abs(trends.executiveSummary.mom_change_percent)}% MoM
+                    </span>
+                    {' • '}
+                    <span className={trends.executiveSummary.yoy_change_percent >= 0 ? 'text-green-300' : 'text-red-300'}>
+                      {trends.executiveSummary.yoy_change_percent >= 0 ? '↑' : '↓'} {Math.abs(trends.executiveSummary.yoy_change_percent)}% YoY
+                    </span>
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
+                  <p className="text-sm text-blue-100 mb-1">Real Price (Inflation-Adjusted)</p>
+                  <p className="text-3xl font-bold">{trends.executiveSummary.current_median_price_real?.toLocaleString()} AZN</p>
+                  <p className="text-xs text-blue-200 mt-2">
+                    CPI baseline: Dec 2024 = 100
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
+                  <p className="text-sm text-blue-100 mb-1">Market Activity</p>
+                  <p className="text-3xl font-bold">{trends.executiveSummary.current_volume?.toLocaleString()}</p>
+                  <p className="text-xs text-blue-200 mt-2">
+                    <span className={trends.executiveSummary.volume_trend >= 0 ? 'text-green-300' : 'text-red-300'}>
+                      {trends.executiveSummary.volume_trend >= 0 ? '↑' : '↓'} {Math.abs(trends.executiveSummary.volume_trend?.toFixed(1))}% vs last month
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
+                <p className="text-sm font-semibold mb-2">Key Market Insights:</p>
+                <ul className="space-y-1 text-sm text-blue-50">
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-300">•</span>
+                    <span>
+                      {trends.executiveSummary.yoy_change_percent > 5
+                        ? `Strong year-over-year price growth (+${trends.executiveSummary.yoy_change_percent}%) indicates robust market demand`
+                        : `Price stability observed; market showing equilibrium conditions`}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-300">•</span>
+                    <span>
+                      Inflation-adjusted prices at {trends.executiveSummary.current_median_price_real?.toLocaleString()} AZN reveal real purchasing power trends
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-300">•</span>
+                    <span>
+                      Market volatility: ±{trends.executiveSummary.price_volatility?.toLocaleString()} AZN standard deviation -
+                      {trends.executiveSummary.price_volatility > 5000 ? ' heightened' : ' moderate'} price variance
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
