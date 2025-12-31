@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Check if user is authenticated and is an admin
@@ -17,7 +17,7 @@ export async function DELETE(
       )
     }
 
-    const userId = params.userId
+    const { userId } = await params
 
     // Prevent admin from deleting themselves
     if (userId === session.user.id) {
