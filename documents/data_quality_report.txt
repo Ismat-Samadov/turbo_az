@@ -1,0 +1,184 @@
+================================================================================
+DATA QUALITY ANALYSIS - TURBO.AZ DATABASE
+================================================================================
+
+📊 Total Listings: 13,828
+
+================================================================================
+NULL VALUE ANALYSIS
+================================================================================
+
+Column               Non-Null     Null         Null %    
+--------------------------------------------------------------------------------
+posted_date          0            13,828       100.00    %
+seller_phone         1,324        12,504       90.43     %
+seller_name          9,695        4,133        29.89     %
+market               11,325       2,503        18.10     %
+extras               12,328       1,500        10.85     %
+seats_count          12,653       1,175        8.50      %
+description          13,228       600          4.34      %
+fuel_type            13,563       265          1.92      %
+listing_id           13,828       0            0.00      %
+listing_url          13,828       0            0.00      %
+title                13,828       0            0.00      %
+price_azn            13,828       0            0.00      %
+make                 13,828       0            0.00      %
+model                13,828       0            0.00      %
+year                 13,828       0            0.00      %
+mileage              13,828       0            0.00      %
+engine_volume        13,828       0            0.00      %
+engine_power         13,828       0            0.00      %
+transmission         13,828       0            0.00      %
+drivetrain           13,828       0            0.00      %
+body_type            13,828       0            0.00      %
+color                13,828       0            0.00      %
+condition            13,828       0            0.00      %
+is_new               13,828       0            0.00      %
+city                 13,828       0            0.00      %
+views                13,828       0            0.00      %
+updated_date         13,828       0            0.00      %
+
+================================================================================
+PRICE FORMAT ANALYSIS
+================================================================================
+
+Top 20 Price Formats:
+  '24 500 ₼': 111 times - [Has spaces (no AZN)]
+  '16 500 ₼': 90 times - [Has spaces (no AZN)]
+  '12 500 ₼': 89 times - [Has spaces (no AZN)]
+  '23 500 ₼': 87 times - [Has spaces (no AZN)]
+  '22 500 ₼': 86 times - [Has spaces (no AZN)]
+  '11 500 ₼': 85 times - [Has spaces (no AZN)]
+  '10 500 ₼': 82 times - [Has spaces (no AZN)]
+  '25 500 ₼': 82 times - [Has spaces (no AZN)]
+  '19 500 ₼': 81 times - [Has spaces (no AZN)]
+  '20 500 ₼': 79 times - [Has spaces (no AZN)]
+  '21 500 ₼': 78 times - [Has spaces (no AZN)]
+  '17 500 ₼': 72 times - [Has spaces (no AZN)]
+  '8 500 ₼': 71 times - [Has spaces (no AZN)]
+  '26 500 ₼': 70 times - [Has spaces (no AZN)]
+  '25 000 ₼': 70 times - [Has spaces (no AZN)]
+  '13 500 ₼': 70 times - [Has spaces (no AZN)]
+  '21 000 ₼': 69 times - [Has spaces (no AZN)]
+  '9 500 ₼': 68 times - [Has spaces (no AZN)]
+  '31 500 ₼': 66 times - [Has spaces (no AZN)]
+  '16 000 ₼': 65 times - [Has spaces (no AZN)]
+
+Price Format Summary:
+  Has spaces (no AZN): 1,571
+
+================================================================================
+YEAR FORMAT ANALYSIS
+================================================================================
+  2025: 2,505 - [Valid (4 digits)]
+  2024: 671 - [Valid (4 digits)]
+  2014: 660 - [Valid (4 digits)]
+  2008: 645 - [Valid (4 digits)]
+  2015: 626 - [Valid (4 digits)]
+  2016: 567 - [Valid (4 digits)]
+  2013: 556 - [Valid (4 digits)]
+  2012: 551 - [Valid (4 digits)]
+  2017: 543 - [Valid (4 digits)]
+  2018: 521 - [Valid (4 digits)]
+  2007: 498 - [Valid (4 digits)]
+  2019: 494 - [Valid (4 digits)]
+  2023: 474 - [Valid (4 digits)]
+  2011: 410 - [Valid (4 digits)]
+  2020: 386 - [Valid (4 digits)]
+
+================================================================================
+MILEAGE FORMAT ANALYSIS
+================================================================================
+  '0 km': 2,738 - [Standard (with km and spaces)]
+  '250 000 km': 130 - [Standard (with km and spaces)]
+  '200 000 km': 89 - [Standard (with km and spaces)]
+  '150 000 km': 86 - [Standard (with km and spaces)]
+  '300 000 km': 83 - [Standard (with km and spaces)]
+  '350 000 km': 80 - [Standard (with km and spaces)]
+  '120 000 km': 70 - [Standard (with km and spaces)]
+  '210 000 km': 67 - [Standard (with km and spaces)]
+  '220 000 km': 67 - [Standard (with km and spaces)]
+  '230 000 km': 63 - [Standard (with km and spaces)]
+  '170 000 km': 63 - [Standard (with km and spaces)]
+  '190 000 km': 61 - [Standard (with km and spaces)]
+  '240 000 km': 60 - [Standard (with km and spaces)]
+  '400 000 km': 59 - [Standard (with km and spaces)]
+  '180 000 km': 59 - [Standard (with km and spaces)]
+
+Mileage Format Summary:
+  Standard (with km and spaces): 3,775
+
+================================================================================
+ENGINE FORMAT ANALYSIS
+================================================================================
+
+Top 10 Engine Volume Formats:
+  '1.5 L': 2,935
+  '2.0 L': 2,663
+  '1.6 L': 1,466
+  '3.0 L': 824
+  '1.4 L': 611
+  '2.5 L': 584
+  '2.4 L': 537
+  '1.8 L': 527
+  '2.2 L': 487
+  '1.7 L': 310
+
+================================================================================
+CITY DATA ANALYSIS
+================================================================================
+
+Top 15 Cities:
+  Bakı: 10,957
+  Sumqayıt: 883
+  Gəncə: 384
+  Xırdalan: 152
+  Lənkəran: 96
+  Mingəçevir: 74
+  Xaçmaz: 70
+  Bərdə: 67
+  Şəmkir: 60
+  Zaqatala: 56
+  Quba: 54
+  Şirvan: 52
+  Şəki: 49
+  Masallı: 45
+  Qəbələ: 42
+
+================================================================================
+PHONE NUMBER ANALYSIS
+================================================================================
+
+Total listings: 13,828
+With phone: 1,324 (9.6%)
+Without phone: 12,504 (90.4%)
+
+================================================================================
+SAMPLE PROBLEMATIC RECORDS
+================================================================================
+
+Sample records with NULL critical fields:
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+🔧 Data Normalization Needed:
+  1. PRICE: Remove 'AZN' text and spaces, convert to integer
+  2. YEAR: Ensure 4-digit format, convert to integer
+  3. MILEAGE: Remove 'km' text and spaces, convert to integer
+  4. ENGINE_VOLUME: Standardize format (e.g., '2.0 L')
+  5. ENGINE_POWER: Extract numeric value
+
+🐛 Scraper Issues to Fix:
+  1. High NULL rate for seller_phone (90%+) - check AJAX endpoint
+  2. Missing critical fields (price, year, city) - improve parsing
+  3. Inconsistent text formats - apply cleaning during scraping
+
+📋 Next Steps:
+  1. Run normalization script to clean existing data
+  2. Update scraper to save clean data from start
+  3. Add data validation before database insert
+  4. Monitor scraping success rates
+
+================================================================================
