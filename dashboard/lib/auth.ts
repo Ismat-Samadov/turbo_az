@@ -6,10 +6,25 @@ import { prisma } from "./prisma"
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/login",
   },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.session-token'
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -53,12 +68,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id
         token.role = user.role
       }
       return token
     },
     async session({ session, token }) {
       if (session?.user) {
+        session.user.id = token.id as string
         session.user.role = token.role as string
       }
       return session
