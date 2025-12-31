@@ -14,19 +14,23 @@ export default function DashboardPage() {
   const [result, setResult] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [stats, setStats] = useState<any>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Fetch dashboard statistics
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await fetch("/api/stats")
-        const data = await res.json()
-        setStats(data)
-      } catch (error) {
-        console.error("Error fetching stats:", error)
-      }
+  async function fetchStats() {
+    try {
+      setIsRefreshing(true)
+      const res = await fetch("/api/stats", { cache: 'no-store' })
+      const data = await res.json()
+      setStats(data)
+    } catch (error) {
+      console.error("Error fetching stats:", error)
+    } finally {
+      setIsRefreshing(false)
     }
+  }
 
+  useEffect(() => {
     fetchStats()
   }, [])
 
@@ -180,14 +184,36 @@ export default function DashboardPage() {
 
         {/* Data Last Updated */}
         {stats && (
-          <div className="text-center text-xs sm:text-sm text-gray-500 py-2">
-            Last updated: {new Date().toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 py-3 bg-white/50 rounded-lg border border-gray-200">
+            <div className="text-xs sm:text-sm text-gray-600">
+              <span className="font-semibold">Data from scraper:</span>{' '}
+              {stats.lastScraped ? (
+                new Date(stats.lastScraped).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
+              ) : 'Unknown'}
+            </div>
+            <span className="hidden sm:inline text-gray-300">|</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchStats}
+              disabled={isRefreshing}
+              className="h-8 px-4 text-xs border-blue-200 hover:bg-blue-50 hover:border-blue-300"
+            >
+              {isRefreshing ? (
+                <span className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-r-transparent"></span>
+                  Refreshing...
+                </span>
+              ) : (
+                'Refresh Data'
+              )}
+            </Button>
           </div>
         )}
 

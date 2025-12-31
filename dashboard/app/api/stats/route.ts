@@ -60,10 +60,16 @@ export async function GET() {
       pool.query("SELECT condition, COUNT(*) as count FROM scraping.turbo_az WHERE condition IS NOT NULL GROUP BY condition ORDER BY count DESC"),
     ])
 
+    // Get last scrape time from database
+    const lastScrapeResult = await pool.query(
+      "SELECT MAX(scraped_at) as last_scrape FROM scraping.turbo_az"
+    )
+
     await pool.end()
 
     return NextResponse.json({
       total: parseInt(totalResult.rows[0]?.total || "0"),
+      lastScraped: lastScrapeResult.rows[0]?.last_scrape || null,
       byMake: byMakeResult.rows.map(row => ({
         ...row,
         count: parseInt(row.count)
