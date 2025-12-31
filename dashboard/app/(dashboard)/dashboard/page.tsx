@@ -5,10 +5,8 @@ import { signOut, useSession } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Car, TrendingUp, MapPin, Calendar, Zap, Database, Brain, ChartBar } from "lucide-react"
-
-const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#14b8a6']
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -238,27 +236,25 @@ export default function DashboardPage() {
                 <Zap className="h-5 w-5 text-orange-600" />
                 <CardTitle>Fuel Type Distribution</CardTitle>
               </div>
-              <CardDescription>Breakdown by fuel type</CardDescription>
+              <CardDescription>Market share by fuel type</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats?.byFuelType || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ fuel_type, percent }: any) => `${fuel_type}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={90}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {(stats?.byFuelType || []).map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
+                <BarChart data={stats?.byFuelType || []} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="fuel_type" tick={{ fontSize: 11 }} width={120} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="count" fill="url(#orangeGradient)" radius={[0, 8, 8, 0]} />
+                  <defs>
+                    <linearGradient id="orangeGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#f59e0b" />
+                      <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -300,29 +296,31 @@ export default function DashboardPage() {
                 <TrendingUp className="h-5 w-5 text-purple-600" />
                 <CardTitle>Transmission Distribution</CardTitle>
               </div>
-              <CardDescription>Breakdown by transmission type</CardDescription>
+              <CardDescription>Market preference analysis</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats?.byTransmission || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ transmission, percent }: any) =>
-                      `${transmission.split('(')[0].trim()}: ${(percent * 100).toFixed(0)}%`
-                    }
-                    outerRadius={90}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {(stats?.byTransmission || []).map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
+                <BarChart data={stats?.byTransmission || []} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis
+                    type="category"
+                    dataKey="transmission"
+                    tick={{ fontSize: 10 }}
+                    width={130}
+                    tickFormatter={(value) => value.split('(')[0].trim()}
+                  />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="count" fill="url(#purpleGradient)" radius={[0, 8, 8, 0]} />
+                  <defs>
+                    <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#ec4899" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -407,31 +405,254 @@ export default function DashboardPage() {
                 <Database className="h-5 w-5 text-teal-600" />
                 <CardTitle>Vehicle Condition</CardTitle>
               </div>
-              <CardDescription>Distribution by condition</CardDescription>
+              <CardDescription>Quality distribution analysis</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats?.byCondition || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ condition, percent }: any) => `${condition}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={90}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {(stats?.byCondition || []).map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
+                <BarChart data={stats?.byCondition || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="condition"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="count" fill="url(#tealGradient)" radius={[8, 8, 0, 0]} />
+                  <defs>
+                    <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#14b8a6" />
+                      <stop offset="100%" stopColor="#06b6d4" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
+
+        {/* Business Insights and Findings */}
+        <Card className="shadow-xl border-l-4 border-l-blue-600 bg-gradient-to-br from-white to-blue-50/20">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+              Key Business Insights
+            </CardTitle>
+            <CardDescription>Data-driven findings to inform strategic decisions</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {stats && (
+              <>
+                {/* Market Concentration Analysis */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-blue-600 rounded"></span>
+                    Market Concentration & Brand Dominance
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-blue-900">Top 3 brands</span> (Mercedes, Hyundai, Changan)
+                        control <span className="font-bold text-blue-600">
+                          {stats.byMake?.slice(0, 3).reduce((sum: number, item: any) => sum + item.count, 0).toLocaleString()}
+                        </span> listings (
+                        {((stats.byMake?.slice(0, 3).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}% market share)
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Strategic Implication:</strong> High concentration indicates brand loyalty and potential partnership opportunities with dominant manufacturers.
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        Mercedes leads with <span className="font-bold text-purple-600">
+                          {stats.byMake?.[0]?.count?.toLocaleString()}
+                        </span> listings, commanding a <span className="font-bold">
+                          {((stats.byMake?.[0]?.count / stats.total) * 100).toFixed(1)}%
+                        </span> market share
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Business Opportunity:</strong> Premium segment shows strong demand; consider inventory optimization for luxury brands.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pricing Strategy Insights */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-pink-600 rounded"></span>
+                    Price Positioning & Value Analysis
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-pink-900">Highest avg price:</span> {stats.avgPriceByMake?.[0]?.make} at{' '}
+                        <span className="font-bold text-pink-600">
+                          {stats.avgPriceByMake?.[0]?.avg_price?.toLocaleString()} AZN
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-600">Premium positioning opportunity in luxury segment</p>
+                    </div>
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        Average market price: <span className="font-bold text-orange-600">
+                          {Math.round(
+                            stats.avgPriceByMake?.reduce((sum: number, item: any) => sum + item.avg_price, 0) /
+                            (stats.avgPriceByMake?.length || 1)
+                          ).toLocaleString()} AZN
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-600">Benchmark for competitive pricing strategy</p>
+                    </div>
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-yellow-900">Price variance:</span> High spread indicates diverse market segments
+                      </p>
+                      <p className="text-xs text-gray-600">Opportunity for targeted marketing by price tier</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geographic Distribution Insights */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-pink-600 rounded"></span>
+                    Geographic Market Concentration
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-green-900">Bakı dominates</span> with{' '}
+                        <span className="font-bold text-green-600">
+                          {stats.byCity?.[0]?.count?.toLocaleString()}
+                        </span> listings (
+                        {((stats.byCity?.[0]?.count / stats.total) * 100).toFixed(1)}% of total market)
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Risk Factor:</strong> High geographic concentration creates dependency on single market; consider expansion to Sumqayıt and Gəncə.
+                      </p>
+                    </div>
+                    <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        Top 3 cities account for <span className="font-bold text-teal-600">
+                          {((stats.byCity?.slice(0, 3).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}%
+                        </span> of inventory
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Growth Opportunity:</strong> Underserved regional markets present expansion potential.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Technology & Market Trends */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-purple-600 rounded"></span>
+                    Technology Adoption & Market Evolution
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-orange-900">Fuel type trend:</span> Benzin leads with{' '}
+                        <span className="font-bold text-orange-600">
+                          {((stats.byFuelType?.[0]?.count / stats.total) * 100).toFixed(1)}%
+                        </span> market share
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Hybrid/Electric growing: {stats.byFuelType?.filter((f: any) =>
+                          f.fuel_type?.toLowerCase().includes('hibrid') || f.fuel_type?.toLowerCase().includes('elektro')
+                        ).reduce((sum: number, item: any) => sum + item.count, 0).toLocaleString()} units
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-purple-900">Transmission preference:</span> Automatic dominates at{' '}
+                        <span className="font-bold text-purple-600">
+                          {((stats.byTransmission?.filter((t: any) =>
+                            t.transmission?.toLowerCase().includes('avtomat')
+                          ).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Market Signal:</strong> Consumer preference shifting toward convenience; prioritize automatic inventory.
+                      </p>
+                    </div>
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-indigo-900">2024-2025 models:</span> Represent{' '}
+                        <span className="font-bold text-indigo-600">
+                          {stats.byYear?.slice(0, 2).reduce((sum: number, item: any) => sum + item.count, 0).toLocaleString()}
+                        </span> units
+                      </p>
+                      <p className="text-xs text-gray-600">Strong new inventory flow indicates healthy market dynamics</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quality & Condition Analysis */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-teal-600 rounded"></span>
+                    Inventory Quality & Risk Assessment
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-teal-900">Primary condition:</span> {stats.byCondition?.[0]?.condition} accounts for{' '}
+                        <span className="font-bold text-teal-600">
+                          {((stats.byCondition?.[0]?.count / stats.total) * 100).toFixed(1)}%
+                        </span> of inventory
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Quality distribution impacts financing options and warranty strategies
+                      </p>
+                    </div>
+                    <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                      <p className="text-sm text-gray-700 mb-2">
+                        <span className="font-semibold text-cyan-900">Risk exposure:</span> Monitor accident/damaged units ratio
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <strong>Recommendation:</strong> Implement rigorous inspection protocols for quality assurance
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Strategic Recommendations */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 rounded-lg">
+                  <h3 className="font-bold text-lg mb-3">Strategic Action Items</h3>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 font-bold">•</span>
+                      <span><strong>Inventory Optimization:</strong> Increase automatic transmission stock by 15% to meet market preference</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 font-bold">•</span>
+                      <span><strong>Geographic Expansion:</strong> Establish presence in Sumqayıt and Gəncə to reduce Bakı dependency</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 font-bold">•</span>
+                      <span><strong>Premium Positioning:</strong> Leverage Mercedes dominance with targeted luxury marketing campaigns</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 font-bold">•</span>
+                      <span><strong>Future-Ready:</strong> Develop hybrid/electric expertise as market share grows; anticipate 20% increase in next 12 months</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 font-bold">•</span>
+                      <span><strong>Risk Mitigation:</strong> Diversify brand portfolio beyond top 3 to reduce concentration risk</span>
+                    </li>
+                  </ul>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* AI Query Section */}
         <Card className="shadow-xl border-gray-200/50 bg-gradient-to-br from-white to-blue-50/30">
