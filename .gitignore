@@ -36,6 +36,9 @@ ENV/
 env/
 .venv
 
+# Environment variables (contains sensitive data)
+.env
+
 # IDE
 .vscode/
 .idea/
