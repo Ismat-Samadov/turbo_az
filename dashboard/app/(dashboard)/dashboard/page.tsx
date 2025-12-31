@@ -164,7 +164,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-blue-100 mb-1">Real Price (Inflation-Adjusted)</p>
                   <p className="text-3xl font-bold">{trends.executiveSummary.current_median_price_real?.toLocaleString()} AZN</p>
                   <p className="text-xs text-blue-200 mt-2">
-                    CPI baseline: Dec 2024 = 100
+                    CPI baseline: Nov 2025 = 233.40
                   </p>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">

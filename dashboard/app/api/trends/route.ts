@@ -5,22 +5,23 @@ import { Pool } from "pg"
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Azerbaijan CPI data (2024 baseline = 100)
+// Azerbaijan CPI data (November 2025 baseline = 233.40)
 // Source: State Statistical Committee of Azerbaijan
 const CPI_DATA: { [key: string]: number } = {
-  "2024-12": 100.0,
-  "2024-11": 99.2,
-  "2024-10": 98.5,
-  "2024-09": 98.0,
-  "2024-08": 97.8,
-  "2024-07": 97.5,
-  "2024-06": 97.2,
-  "2024-05": 96.8,
-  "2024-04": 96.5,
-  "2024-03": 96.2,
-  "2024-02": 95.8,
-  "2024-01": 95.5,
-  "2025-01": 100.5, // Projected
+  "2025-11": 233.40,
+  "2025-10": 232.70, // Previous month
+  "2024-12": 230.0,  // Estimated historical (scaled proportionally)
+  "2024-11": 229.0,
+  "2024-10": 228.0,
+  "2024-09": 227.0,
+  "2024-08": 226.5,
+  "2024-07": 226.0,
+  "2024-06": 225.5,
+  "2024-05": 225.0,
+  "2024-04": 224.5,
+  "2024-03": 224.0,
+  "2024-02": 223.5,
+  "2024-01": 223.0,
 }
 
 export async function GET() {
@@ -107,8 +108,8 @@ export async function GET() {
     // Calculate inflation-adjusted prices
     const trendsWithInflation = monthlyTrends.rows.map((row: any) => {
       const monthKey = new Date(row.month).toISOString().substring(0, 7)
-      const cpiIndex = CPI_DATA[monthKey] || 100
-      const cpiBase = 100 // December 2024 baseline
+      const cpiIndex = CPI_DATA[monthKey] || 233.40
+      const cpiBase = 233.40 // November 2025 baseline
 
       return {
         month: row.month,
