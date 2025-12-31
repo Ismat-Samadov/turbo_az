@@ -46,10 +46,20 @@ export default function DashboardPage() {
       })
 
       const data = await res.json()
-      setResult(data)
+
+      // Check for Gemini API quota errors
+      if (data.error && data.error.includes("quota")) {
+        setResult({
+          error: "AI Query limit reached. The free tier quota has been exceeded. Please try again later or contact the administrator to upgrade the API plan."
+        })
+      } else {
+        setResult(data)
+      }
     } catch (error) {
       console.error("Error:", error)
-      setResult({ error: "Failed to fetch results" })
+      setResult({
+        error: "Failed to connect to AI service. Please check your internet connection and try again."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -72,49 +82,51 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg">
-              <Car className="h-6 w-6 text-white" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg">
+                <Car className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Turbo Analytics
+              </h1>
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Turbo Analytics
-            </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {session?.user?.email}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm text-gray-600 flex items-center gap-2">
+                <span className="truncate max-w-[150px] sm:max-w-none">{session?.user?.email}</span>
+                {session?.user?.role === "admin" && (
+                  <span className="px-2 py-0.5 sm:py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full whitespace-nowrap">
+                    Admin
+                  </span>
+                )}
+              </span>
               {session?.user?.role === "admin" && (
-                <span className="ml-2 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = "/admin"}
+                  className="border-blue-200 hover:bg-blue-50 text-xs sm:text-sm h-8 px-2 sm:px-3"
+                >
                   Admin
-                </span>
+                </Button>
               )}
-            </span>
-            {session?.user?.role === "admin" && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = "/admin"}
-                className="border-blue-200 hover:bg-blue-50"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="border-gray-200 hover:bg-gray-50 text-xs sm:text-sm h-8 px-2 sm:px-3"
               >
-                Admin Panel
+                Sign Out
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="border-gray-200 hover:bg-gray-50"
-            >
-              Sign Out
-            </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+      <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -168,8 +180,21 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Data Last Updated */}
+        {stats && (
+          <div className="text-center text-xs sm:text-sm text-gray-500 py-2">
+            Last updated: {new Date().toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </div>
+        )}
+
         {/* Charts Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Top Makes Chart */}
           <Card className="shadow-lg border-gray-200/50">
             <CardHeader>
@@ -229,6 +254,175 @@ export default function DashboardPage() {
                     dataKey="count"
                   >
                     {(stats?.byFuelType || []).map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Listings by Year */}
+          <Card className="shadow-lg border-gray-200/50">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-green-600" />
+                <CardTitle>Listings by Year</CardTitle>
+              </div>
+              <CardDescription>Recent model years (2015+)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={stats?.byYear || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    dot={{ fill: "#10b981", r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Transmission Types */}
+          <Card className="shadow-lg border-gray-200/50">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+                <CardTitle>Transmission Distribution</CardTitle>
+              </div>
+              <CardDescription>Breakdown by transmission type</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={stats?.byTransmission || []}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ transmission, percent }: any) =>
+                      `${transmission.split('(')[0].trim()}: ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={90}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {(stats?.byTransmission || []).map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Average Price by Make */}
+          <Card className="shadow-lg border-gray-200/50 lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-pink-600" />
+                <CardTitle>Average Price by Brand</CardTitle>
+              </div>
+              <CardDescription>Top brands with average prices (AZN)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={stats?.avgPriceByMake || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="make"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                    formatter={(value: any) => `${parseInt(value).toLocaleString()} AZN`}
+                  />
+                  <Bar dataKey="avg_price" fill="url(#pinkGradient)" radius={[8, 8, 0, 0]} />
+                  <defs>
+                    <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#f59e0b" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Body Type Distribution */}
+          <Card className="shadow-lg border-gray-200/50">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Car className="h-5 w-5 text-indigo-600" />
+                <CardTitle>Body Type Distribution</CardTitle>
+              </div>
+              <CardDescription>Most popular body styles</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats?.byBodyType || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="body_type"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="count" fill="url(#indigoGradient)" radius={[8, 8, 0, 0]} />
+                  <defs>
+                    <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#14b8a6" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Condition Distribution */}
+          <Card className="shadow-lg border-gray-200/50">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-teal-600" />
+                <CardTitle>Vehicle Condition</CardTitle>
+              </div>
+              <CardDescription>Distribution by condition</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={stats?.byCondition || []}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ condition, percent }: any) => `${condition}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={90}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {(stats?.byCondition || []).map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
