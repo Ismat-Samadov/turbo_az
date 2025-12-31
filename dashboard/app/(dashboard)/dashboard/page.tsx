@@ -146,7 +146,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
                   <p className="text-sm text-blue-100 mb-1">Current Median Price</p>
                   <p className="text-3xl font-bold">{trends.executiveSummary.current_median_price?.toLocaleString()} AZN</p>
@@ -158,13 +158,6 @@ export default function DashboardPage() {
                     <span className={trends.executiveSummary.yoy_change_percent >= 0 ? 'text-green-300' : 'text-red-300'}>
                       {trends.executiveSummary.yoy_change_percent >= 0 ? '↑' : '↓'} {Math.abs(trends.executiveSummary.yoy_change_percent)}% YoY
                     </span>
-                  </p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
-                  <p className="text-sm text-blue-100 mb-1">Real Price (Inflation-Adjusted)</p>
-                  <p className="text-3xl font-bold">{trends.executiveSummary.current_median_price_real?.toLocaleString()} AZN</p>
-                  <p className="text-xs text-blue-200 mt-2">
-                    CPI baseline: Nov 2025 = 233.40
                   </p>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
@@ -191,7 +184,7 @@ export default function DashboardPage() {
                   <li className="flex items-start gap-2">
                     <span className="text-yellow-300">•</span>
                     <span>
-                      Inflation-adjusted prices at {trends.executiveSummary.current_median_price_real?.toLocaleString()} AZN reveal real purchasing power trends
+                      Current median market price at {trends.executiveSummary.current_median_price?.toLocaleString()} AZN indicates stable collateral valuations
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
