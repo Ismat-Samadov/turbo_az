@@ -19,9 +19,18 @@ export async function GET() {
 
     return NextResponse.json({
       total: parseInt(totalResult.rows[0]?.total || "0"),
-      byMake: byMakeResult.rows,
-      byCity: byCityResult.rows,
-      byFuelType: byFuelTypeResult.rows,
+      byMake: byMakeResult.rows.map(row => ({
+        ...row,
+        count: parseInt(row.count)
+      })),
+      byCity: byCityResult.rows.map(row => ({
+        ...row,
+        count: parseInt(row.count)
+      })),
+      byFuelType: byFuelTypeResult.rows.map(row => ({
+        ...row,
+        count: parseInt(row.count)
+      })),
     })
   } catch (error: any) {
     await pool.end()

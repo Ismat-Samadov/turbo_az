@@ -183,7 +183,13 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={stats?.byMake || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="make" tick={{ fontSize: 12 }} />
+                  <XAxis
+                    dataKey="make"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
