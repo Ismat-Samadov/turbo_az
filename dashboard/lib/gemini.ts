@@ -68,7 +68,7 @@ Return ONLY the SQL query, nothing else. Do not include markdown formatting or e
 `
 
 export async function generateSQLQuery(userQuestion: string): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
   const prompt = `${DATABASE_SCHEMA}
 

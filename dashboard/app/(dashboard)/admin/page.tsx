@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,17 +60,21 @@ export default function AdminPage() {
       })
 
       if (res.ok) {
-        alert("User created successfully")
+        // Reset form before closing to avoid null reference
+        e.currentTarget.reset()
+        setMessage({ type: 'success', text: 'User created successfully!' })
         setShowCreateForm(false)
         fetchUsers()
-        e.currentTarget.reset()
+        setTimeout(() => setMessage(null), 5000)
       } else {
         const data = await res.json()
-        alert(data.error || "Failed to create user")
+        setMessage({ type: 'error', text: data.error || 'Failed to create user' })
+        setTimeout(() => setMessage(null), 5000)
       }
     } catch (error) {
       console.error("Error creating user:", error)
-      alert("Error creating user")
+      setMessage({ type: 'error', text: 'Error creating user' })
+      setTimeout(() => setMessage(null), 5000)
     } finally {
       setIsCreating(false)
     }
@@ -84,14 +89,18 @@ export default function AdminPage() {
       })
 
       if (res.ok) {
-        alert("User deleted successfully")
+        setMessage({ type: 'success', text: 'User deleted successfully!' })
         fetchUsers()
+        setTimeout(() => setMessage(null), 5000)
       } else {
-        alert("Failed to delete user")
+        const data = await res.json()
+        setMessage({ type: 'error', text: data.error || 'Failed to delete user' })
+        setTimeout(() => setMessage(null), 5000)
       }
     } catch (error) {
       console.error("Error deleting user:", error)
-      alert("Error deleting user")
+      setMessage({ type: 'error', text: 'Error deleting user' })
+      setTimeout(() => setMessage(null), 5000)
     }
   }
 
@@ -139,6 +148,33 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Success/Error Message */}
+        {message && (
+          <div className={`p-4 rounded-lg border ${
+            message.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          } flex items-center justify-between animate-in fade-in slide-in-from-top-2`}>
+            <div className="flex items-center gap-2">
+              {message.type === 'success' ? (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+              <span className="font-medium">{message.text}</span>
+            </div>
+            <button onClick={() => setMessage(null)} className="text-current hover:opacity-70">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
