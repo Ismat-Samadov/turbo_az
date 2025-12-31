@@ -284,11 +284,43 @@ class TurboAzScraper:
             return None
 
     def extract_listing_urls(self, html: str) -> List[Dict[str, any]]:
-        """Extract all car listing URLs and badge data from a page"""
+        """Extract car listing URLs from the 'ELANLAR' section only (excluding promoted sections)"""
         soup = BeautifulSoup(html, 'html.parser')
         listing_data = []
 
-        products = soup.find_all('div', class_='products-i')
+        # Find the "ELANLAR" section title
+        # There are 3 sections on each page:
+        # 1. "SALONLARIN VIP ELANLARI" (skip)
+        # 2. "VIP ELANLAR" (skip)
+        # 3. "ELANLAR" (we want this one!)
+
+        elanlar_section = None
+        section_titles = soup.find_all('div', class_='section-title')
+
+        for section in section_titles:
+            title_elem = section.find('p', class_='section-title_name')
+            if title_elem and 'ELANLAR' in title_elem.get_text() and 'VIP' not in title_elem.get_text():
+                # Found the "ELANLAR" section (not "VIP ELANLAR")
+                # The products container comes after this section title
+                elanlar_section = section
+                break
+
+        if elanlar_section:
+            # Find the products container that comes after the "ELANLAR" title
+            # Navigate to the next sibling container that has products
+            next_container = elanlar_section.find_next_sibling('div', class_='tz-container')
+            if next_container:
+                products_container = next_container.find('div', class_='products')
+                if products_container:
+                    products = products_container.find_all('div', class_='products-i')
+                else:
+                    products = []
+            else:
+                products = []
+        else:
+            # Fallback: if section structure not found, get all products (old behavior)
+            logger.warning("Could not find 'ELANLAR' section, falling back to all products")
+            products = soup.find_all('div', class_='products-i')
 
         for product in products:
             link = product.find('a', class_='products-i__link')
@@ -309,6 +341,8 @@ class TurboAzScraper:
                     'url': full_url,
                     'badges': badges
                 })
+
+        logger.debug(f"Found {len(listing_data)} listings in 'ELANLAR' section")
 
         return listing_data
 
