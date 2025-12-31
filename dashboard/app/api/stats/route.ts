@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { Pool } from "pg"
 
+// Force dynamic rendering - no caching, no static generation
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
