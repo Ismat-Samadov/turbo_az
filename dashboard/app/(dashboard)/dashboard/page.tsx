@@ -296,26 +296,21 @@ export default function DashboardPage() {
                 <TrendingUp className="h-5 w-5 text-purple-600" />
                 <CardTitle>Transmission Distribution</CardTitle>
               </div>
-              <CardDescription>Market preference analysis</CardDescription>
+              <CardDescription>Market preference: Automatic vs Manual</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats?.byTransmission || []} layout="vertical">
+                <BarChart data={stats?.byTransmission || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    type="category"
-                    dataKey="transmission"
-                    tick={{ fontSize: 10 }}
-                    width={130}
-                    tickFormatter={(value) => value.split('(')[0].trim()}
-                  />
+                  <XAxis dataKey="transmission" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }}
+                    formatter={(value: any) => [`${parseInt(value).toLocaleString()} listings`, 'Count']}
                   />
-                  <Bar dataKey="count" fill="url(#purpleGradient)" radius={[0, 8, 8, 0]} />
+                  <Bar dataKey="count" fill="url(#purpleGradient)" radius={[8, 8, 0, 0]} />
                   <defs>
-                    <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
+                    <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#8b5cf6" />
                       <stop offset="100%" stopColor="#ec4899" />
                     </linearGradient>
@@ -573,13 +568,17 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-700 mb-2">
                         <span className="font-semibold text-purple-900">Transmission preference:</span> Automatic dominates at{' '}
                         <span className="font-bold text-purple-600">
-                          {((stats.byTransmission?.filter((t: any) =>
-                            t.transmission?.toLowerCase().includes('avtomat')
-                          ).reduce((sum: number, item: any) => sum + item.count, 0) / stats.total) * 100).toFixed(1)}%
+                          {stats.byTransmission?.find((t: any) =>
+                            t.transmission?.toLowerCase() === 'automatic'
+                          ) ? (
+                            ((stats.byTransmission.find((t: any) =>
+                              t.transmission?.toLowerCase() === 'automatic'
+                            ).count / stats.total) * 100).toFixed(1)
+                          ) : '0.0'}%
                         </span>
                       </p>
                       <p className="text-xs text-gray-600">
-                        <strong>Market Signal:</strong> Consumer preference shifting toward convenience; prioritize automatic inventory.
+                        <strong>Market Signal:</strong> Nearly 4 in 5 buyers prefer automatic transmission; prioritize automatic inventory acquisition.
                       </p>
                     </div>
                     <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">

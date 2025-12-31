@@ -24,7 +24,24 @@ export async function GET() {
       pool.query("SELECT city, COUNT(*) as count FROM scraping.turbo_az WHERE city IS NOT NULL GROUP BY city ORDER BY count DESC LIMIT 6"),
       pool.query("SELECT fuel_type, COUNT(*) as count FROM scraping.turbo_az WHERE fuel_type IS NOT NULL GROUP BY fuel_type ORDER BY count DESC LIMIT 5"),
       pool.query("SELECT year, COUNT(*) as count FROM scraping.turbo_az WHERE year IS NOT NULL AND year >= 2015 GROUP BY year ORDER BY year DESC LIMIT 10"),
-      pool.query("SELECT transmission, COUNT(*) as count FROM scraping.turbo_az WHERE transmission IS NOT NULL GROUP BY transmission ORDER BY count DESC"),
+      pool.query(`
+        SELECT
+          CASE
+            WHEN transmission ILIKE '%avtomat%' OR transmission ILIKE '%automatic%' THEN 'Automatic'
+            WHEN transmission ILIKE '%mexaniki%' OR transmission ILIKE '%manual%' THEN 'Manual'
+            ELSE transmission
+          END as transmission,
+          COUNT(*) as count
+        FROM scraping.turbo_az
+        WHERE transmission IS NOT NULL
+        GROUP BY
+          CASE
+            WHEN transmission ILIKE '%avtomat%' OR transmission ILIKE '%automatic%' THEN 'Automatic'
+            WHEN transmission ILIKE '%mexaniki%' OR transmission ILIKE '%manual%' THEN 'Manual'
+            ELSE transmission
+          END
+        ORDER BY count DESC
+      `),
       pool.query("SELECT body_type, COUNT(*) as count FROM scraping.turbo_az WHERE body_type IS NOT NULL GROUP BY body_type ORDER BY count DESC LIMIT 6"),
       pool.query(`
         SELECT
