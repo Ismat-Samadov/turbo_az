@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  image         String?
+  role          String    @default("user") // "user" or "admin"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+// Existing turbo.az listings table (read-only reference)
+model TurboListing {
+  listingId     Int       @id @map("listing_id")
+  listingUrl    String?   @map("listing_url")
+  title         String?
+  priceAzn      String?   @map("price_azn")
+  make          String?
+  model         String?
+  year          Int?
+  mileage       String?
+  engineVolume  String?   @map("engine_volume")
+  enginePower   String?   @map("engine_power")
+  fuelType      String?   @map("fuel_type")
+  transmission  String?
+  drivetrain    String?
+  bodyType      String?   @map("body_type")
+  color         String?
+  seatsCount    Int?      @map("seats_count")
+  condition     String?
+  market        String?
+  isNew         String?   @map("is_new")
+  city          String?
+  sellerName    String?   @map("seller_name")
+  sellerPhone   Json?     @map("seller_phone")
+  description   String?
+  extras        String?
+  views         Int?
+  updatedDate   String?   @map("updated_date")
+  postedDate    String?   @map("posted_date")
+  isVip         Boolean   @default(false) @map("is_vip")
+  isFeatured    Boolean   @default(false) @map("is_featured")
+  isSalon       Boolean   @default(false) @map("is_salon")
+  hasCredit     Boolean   @default(false) @map("has_credit")
+  hasBarter     Boolean   @default(false) @map("has_barter")
+  hasVin        Boolean   @default(false) @map("has_vin")
+  imageUrls     String?   @map("image_urls")
+  scrapedAt     DateTime? @map("scraped_at")
+
+  @@map("scraping.turbo_az")
+}
