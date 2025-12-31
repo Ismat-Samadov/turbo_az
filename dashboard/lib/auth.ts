@@ -4,7 +4,6 @@ import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
