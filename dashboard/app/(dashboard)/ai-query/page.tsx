@@ -90,7 +90,7 @@ export default function AIQueryPage() {
                   onClick={() => router.push("/admin")}
                   className="border-blue-200 hover:bg-blue-50 text-xs sm:text-sm h-8 px-2 sm:px-3"
                 >
-                  Admin
+                  Admin Panel
                 </Button>
               )}
               <Button

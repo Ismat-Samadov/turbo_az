@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { signOut, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
@@ -9,6 +10,7 @@ import { Car, TrendingUp, MapPin, Calendar, Zap, Database, ChartBar, Brain } fro
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [stats, setStats] = useState<any>(null)
   const [trends, setTrends] = useState<any>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -62,7 +64,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = "/ai-query"}
+                onClick={() => router.push("/ai-query")}
                 className="border-purple-200 hover:bg-purple-50 text-xs sm:text-sm h-8 px-2 sm:px-3 flex items-center gap-1"
               >
                 <Brain className="h-3 w-3" />
@@ -72,10 +74,10 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.location.href = "/admin"}
+                  onClick={() => router.push("/admin")}
                   className="border-blue-200 hover:bg-blue-50 text-xs sm:text-sm h-8 px-2 sm:px-3"
                 >
-                  Admin
+                  Admin Panel
                 </Button>
               )}
               <Button
