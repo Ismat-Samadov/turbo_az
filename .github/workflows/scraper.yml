@@ -2,8 +2,8 @@ name: Turbo.az Scraper
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # Run every 1 hours
+    - cron: '0 */1 * * *'
 
   workflow_dispatch:
     # Allow manual trigger with optional page range override
