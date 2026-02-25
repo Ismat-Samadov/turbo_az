@@ -2,8 +2,6 @@
 .jsonl
 .csv
 .json
-scraped_data_backup.json
-scraper_checkpoint.json
 # Logs
 *.log
 .claude
@@ -22,8 +20,6 @@ eggs/
 .eggs/
 lib/
 lib64/
-# Exception: Allow dashboard lib directory (Next.js source code)
-!dashboard/lib/
 parts/
 sdist/
 var/
@@ -31,7 +27,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-dashboard/node_modules
+
 # Virtual environments
 venv/
 ENV/
@@ -51,7 +47,3 @@ env/
 # OS
 .DS_Store
 Thumbs.db
-
-# Keep example outputs (if any)
-!example_output.csv
-!example_output.xlsx
